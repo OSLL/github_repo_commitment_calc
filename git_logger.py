@@ -38,7 +38,9 @@ def log_repository_commits(repository: Repository, csv_name):
 
             if commit.author is not None:
                 info['author login'] = commit.author.login
-                info['author email'] = commit.author.email
+
+            if commit.commit.author is not None:
+                info['author email'] = commit.commit.author.email
 
             log_commit_to_csv(info, csv_name)
             log_commit_to_stdout(info)
@@ -65,11 +67,11 @@ def log_repository_issues(repository: Repository, csv_name):
             'created at': issue.created_at,
             'creator name': EMPTY_FIELD,
             'creator login': EMPTY_FIELD,
-            'creator email': EMPTY_FIELD,
+            'creator email': EMPTY_FIELD if issue.user.email is None else issue.user.email,
             'closed at': EMPTY_FIELD,
             'closer name': EMPTY_FIELD,
             'closer login': EMPTY_FIELD,
-            'closer email': EMPTY_FIELD,
+            'closer email': EMPTY_FIELD if issue.closed_by is None else issue.closed_by.email,
             'comment body': EMPTY_FIELD,
             'comment created at': EMPTY_FIELD,
             'comment author name': EMPTY_FIELD,
@@ -80,15 +82,11 @@ def log_repository_issues(repository: Repository, csv_name):
         if issue.user is not None:
             info_tmp['creator name'] = issue.user.name
             info_tmp['creator login'] = issue.user.login
-            info_tmp['creator email'] = issue.user.email
-            info_tmp['creator name'] = issue.user.name
-            info_tmp['creator name'] = issue.user.name
 
         if issue.closed_by is not None:
             info_tmp['closed at'] = issue.closed_at
             info_tmp['creator name'] = issue.closed_by.name
             info_tmp['creator login'] = issue.user.login
-            info_tmp['creator email'] = issue.closed_by.email
 
         if issue.get_comments().totalCount > 0:
             for comment in issue.get_comments():
@@ -153,7 +151,7 @@ def log_repositories_pr(repository: Repository, csv_name):
                 info['comment created at'] = comment.created_at
                 info['comment author name'] = comment.user.name
                 info['comment author login'] = comment.user.login
-                info['comment author email'] = comment.user.email
+                info['comment author email'] = EMPTY_FIELD if comment.user.email is None else comment.user.email
                 log_pr_to_csv(info, csv_name)
                 log_pr_to_stdout(info)
         else:
