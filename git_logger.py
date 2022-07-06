@@ -232,6 +232,6 @@ def log_repositories(client: Github, repositories, csv_name):
             print(f'Github: Connect: {err.data}')
             raise Exception(f'Github: Connect: failed to load repository {repo_name}')
 
-        # log_repository_commits(repo, 'repos_stats_commits.csv')
-        # log_repository_issues(repo, 'repos_stats_issues.csv')
+        log_repository_commits(repo, 'repos_stats_commits.csv')
+        log_repository_issues(repo, 'repos_stats_issues.csv')
         log_repositories_pr(repo, 'repos_stats_pr.csv')
