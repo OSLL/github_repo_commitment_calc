@@ -4,6 +4,8 @@ import git_logger
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument("-p", help="log pull requests", action="store_true")
+    parser.add_argument("-i", help="log issues", action="store_true")
     parser.add_argument('-t', '--token', type=str, required=True, help='token github account')
     parser.add_argument('-l', '--list', type=str, required=True, help='repos names file')
     parser.add_argument('-o', '--out', type=str, required=True, help='output filename')
@@ -18,9 +20,15 @@ def main():
 
     try:
         client = git_logger.login(token=token)
-        git_logger.log_repositories(client=client, repositories=repositories, csv_name=csv_name)
     except Exception as e:
         print(e)
+    else:
+        if not args.p and not args.i:
+            git_logger.log_commits(client, repositories, csv_name)
+        if args.p:
+            git_logger.log_pull_requests(client, repositories, csv_name)
+        if args.i:
+            git_logger.log_issues(client, repositories, csv_name)
 
 
 if __name__ == '__main__':

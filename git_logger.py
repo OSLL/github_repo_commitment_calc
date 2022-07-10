@@ -159,44 +159,8 @@ def log_repositories_pr(repository: Repository, csv_name):
             log_pr_to_stdout(info_tmp)
 
 
-def log_repositories(client: Github, repositories, csv_name):
-    with open('repos_stats_commits.csv', 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(
-            (
-                'repository name',
-                'author name',
-                'author login',
-                'author email',
-                'date and time',
-                'changed files',
-            )
-        )
-
-    with open('repos_stats_issues.csv', 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(
-            (
-                'repository name',
-                'number',
-                'title',
-                'state',
-                'task',
-                'created at',
-                'creator name',
-                'creator email',
-                'closer name',
-                'closer email',
-                'closed at',
-                'comment body',
-                'comment created at',
-                'comment author name',
-                'comment author login',
-                'comment author email',
-            )
-        )
-
-    with open('repos_stats_pr.csv', 'w', newline='') as file:
+def log_pull_requests(client: Github, repositories, csv_name):
+    with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(
             (
@@ -220,7 +184,6 @@ def log_repositories(client: Github, repositories, csv_name):
                 'merger email',
             )
         )
-
     with open(repositories, 'r') as file:
         list_repos = file.read().split('\n')
     for repo_name in list_repos:
@@ -229,7 +192,62 @@ def log_repositories(client: Github, repositories, csv_name):
         except GithubException as err:
             print(f'Github: Connect: {err.data}')
             raise Exception(f'Github: Connect: failed to load repository {repo_name}')
+        log_repositories_pr(repo, csv_name)
 
-        log_repository_commits(repo, 'repos_stats_commits.csv')
-        log_repository_issues(repo, 'repos_stats_issues.csv')
-        log_repositories_pr(repo, 'repos_stats_pr.csv')
+
+def log_issues(client: Github, repositories, csv_name):
+    with open(csv_name, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(
+            (
+                'repository name',
+                'number',
+                'title',
+                'state',
+                'task',
+                'created at',
+                'creator name',
+                'creator email',
+                'closer name',
+                'closer email',
+                'closed at',
+                'comment body',
+                'comment created at',
+                'comment author name',
+                'comment author login',
+                'comment author email',
+            )
+        )
+    with open(repositories, 'r') as file:
+        list_repos = file.read().split('\n')
+    for repo_name in list_repos:
+        try:
+            repo = client.get_repo(repo_name)
+        except GithubException as err:
+            print(f'Github: Connect: {err.data}')
+            raise Exception(f'Github: Connect: failed to load repository {repo_name}')
+        log_repository_issues(repo, csv_name)
+
+
+def log_commits(client: Github, repositories, csv_name):
+    with open(csv_name, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(
+            (
+                'repository name',
+                'author name',
+                'author login',
+                'author email',
+                'date and time',
+                'changed files',
+            )
+        )
+    with open(repositories, 'r') as file:
+        list_repos = file.read().split('\n')
+    for repo_name in list_repos:
+        try:
+            repo = client.get_repo(repo_name)
+        except GithubException as err:
+            print(f'Github: Connect: {err.data}')
+            raise Exception(f'Github: Connect: failed to load repository {repo_name}')
+        log_repository_commits(repo, csv_name)
