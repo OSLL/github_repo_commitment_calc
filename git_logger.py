@@ -1,7 +1,6 @@
 from github import Github, Repository, GithubException
 import csv
 
-
 EMPTY_FIELD = 'Empty field'
 
 
@@ -11,8 +10,24 @@ def login(token):
         client.get_user().login
     except GithubException as err:
         print(f'Github: Connect: error {err.data}')
-        raise Exception('Github: Connect: user could not be authenticated please try again.')
-    return client
+        print('Github: Connect: user could not be authenticated please try again.')
+        raise exit(1)
+    else:
+        return client
+
+
+def get_next_repo(client: Github, repositories):
+    with open(repositories, 'r') as file:
+        list_repos = file.read().split('\n')
+    for repo_name in list_repos:
+        try:
+            repo = client.get_repo(repo_name)
+        except GithubException as err:
+            print(f'Github: Connect: error {err.data}')
+            print(f'Github: Connect: failed to load repository "{repo_name}"')
+            exit(1)
+        else:
+            yield repo
 
 
 def log_commit_to_csv(info, csv_name):
@@ -77,7 +92,7 @@ def log_repository_issues(repository: Repository, csv_name):
             'comment author name': EMPTY_FIELD,
             'comment author login': EMPTY_FIELD,
             'comment author email': EMPTY_FIELD,
-            }
+        }
 
         if issue.user is not None:
             info_tmp['creator name'] = issue.user.name
@@ -104,7 +119,8 @@ def log_repository_issues(repository: Repository, csv_name):
 
 
 def log_pr_to_csv(info, csv_name):
-    fieldnames = ['repository name', 'title', 'state', 'commit into', 'commit from', 'created at', 'creator name', 'creator login', 'creator email',
+    fieldnames = ['repository name', 'title', 'state', 'commit into', 'commit from', 'created at', 'creator name',
+                  'creator login', 'creator email',
                   'changed files', 'comment body', 'comment created at', 'comment author name', 'comment author login',
                   'comment author email', 'merger name', 'merger login', 'merger email']
     with open(csv_name, 'a', newline='') as file:
@@ -135,7 +151,7 @@ def log_repositories_pr(repository: Repository, csv_name):
             'comment author login': EMPTY_FIELD,
             'comment author email': EMPTY_FIELD,
             'merger name': EMPTY_FIELD,
-            'merger login':  EMPTY_FIELD,
+            'merger login': EMPTY_FIELD,
             'merger email': EMPTY_FIELD,
         }
 
@@ -184,14 +200,8 @@ def log_pull_requests(client: Github, repositories, csv_name):
                 'merger email',
             )
         )
-    with open(repositories, 'r') as file:
-        list_repos = file.read().split('\n')
-    for repo_name in list_repos:
-        try:
-            repo = client.get_repo(repo_name)
-        except GithubException as err:
-            print(f'Github: Connect: {err.data}')
-            raise Exception(f'Github: Connect: failed to load repository {repo_name}')
+
+    for repo in get_next_repo(client, repositories):
         log_repositories_pr(repo, csv_name)
 
 
@@ -218,14 +228,8 @@ def log_issues(client: Github, repositories, csv_name):
                 'comment author email',
             )
         )
-    with open(repositories, 'r') as file:
-        list_repos = file.read().split('\n')
-    for repo_name in list_repos:
-        try:
-            repo = client.get_repo(repo_name)
-        except GithubException as err:
-            print(f'Github: Connect: {err.data}')
-            raise Exception(f'Github: Connect: failed to load repository {repo_name}')
+
+    for repo in get_next_repo(client, repositories):
         log_repository_issues(repo, csv_name)
 
 
@@ -242,12 +246,6 @@ def log_commits(client: Github, repositories, csv_name):
                 'changed files',
             )
         )
-    with open(repositories, 'r') as file:
-        list_repos = file.read().split('\n')
-    for repo_name in list_repos:
-        try:
-            repo = client.get_repo(repo_name)
-        except GithubException as err:
-            print(f'Github: Connect: {err.data}')
-            raise Exception(f'Github: Connect: failed to load repository {repo_name}')
+
+    for repo in get_next_repo(client, repositories):
         log_repository_commits(repo, csv_name)
