@@ -1,0 +1,2 @@
+OSLL/web_speech_trainer
+moevm/mse_db_gen_tasks
