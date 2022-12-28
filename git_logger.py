@@ -18,7 +18,8 @@ def login(token):
 
 def get_next_repo(client: Github, repositories):
     with open(repositories, 'r') as file:
-        list_repos = file.read().split('\n')
+        list_repos = [x for x in file.read().split('\n') if x]
+    print(list_repos)
     for repo_name in list_repos:
         try:
             repo = client.get_repo(repo_name)
