@@ -123,7 +123,7 @@ def log_pr_to_csv(info, csv_name):
     fieldnames = ['repository name', 'title', 'state', 'commit into', 'commit from', 'created at', 'creator name',
                   'creator login', 'creator email',
                   'changed files', 'comment body', 'comment created at', 'comment author name', 'comment author login',
-                  'comment author email', 'merger name', 'merger login', 'merger email']
+                  'comment author email', 'merger name', 'merger login', 'merger email', 'source branch', 'target branch']
     with open(csv_name, 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writerow(info)
@@ -154,6 +154,8 @@ def log_repositories_pr(repository: Repository, csv_name):
             'merger name': EMPTY_FIELD,
             'merger login': EMPTY_FIELD,
             'merger email': EMPTY_FIELD,
+            'source branch': pull.head.ref,
+            'target branch': pull.base.ref,
         }
 
         if pull.merged_by is not None:
@@ -199,6 +201,8 @@ def log_pull_requests(client: Github, repositories, csv_name):
                 'merger name',
                 'merger login',
                 'merger email',
+                'source branch',
+                'target branch',
             )
         )
 
