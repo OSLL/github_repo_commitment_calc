@@ -3,7 +3,6 @@ import csv
 
 EMPTY_FIELD = 'Empty field'
 
-
 def login(token):
     client = Github(login_or_token=token)
     try:
@@ -32,7 +31,7 @@ def get_next_repo(client: Github, repositories):
 
 
 def log_commit_to_csv(info, csv_name):
-    fieldnames = ['repository name', 'author name', 'author login', 'author email', 'date and time', 'changed files']
+    fieldnames = ['repository name', 'commit id', 'author name', 'author login', 'author email', 'date and time', 'changed files']
     with open(csv_name, 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writerow(info)
@@ -46,6 +45,7 @@ def log_repository_commits(repository: Repository, csv_name):
     for commit in repository.get_commits():
         if commit.commit is not None:
             info = {'repository name': repository.full_name,
+                    'commit id': commit.commit.sha,
                     'author name': commit.commit.author.name,
                     'author login': EMPTY_FIELD,
                     'author email': EMPTY_FIELD,
@@ -244,6 +244,7 @@ def log_commits(client: Github, repositories, csv_name):
         writer.writerow(
             (
                 'repository name',
+                'commit id',
                 'author name',
                 'author login',
                 'author email',
