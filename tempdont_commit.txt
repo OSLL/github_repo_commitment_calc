@@ -1,0 +1,4 @@
+python main.py -p -t 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 -l  repos.txt -o out_pulls.csv
+python main.py -i -t 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 -l  repos.txt -o out_issues.csv
+
+cd C:\Users\User\Documents\GitHub\github_repo_commitment_calc
