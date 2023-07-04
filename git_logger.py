@@ -1,6 +1,6 @@
 import csv
 
-from github import Github, Repository, GithubException
+from github import Github, Repository, GithubException, PullRequest
 
 EMPTY_FIELD = 'Empty field'
 
@@ -30,6 +30,24 @@ def get_next_repo(client: Github, repositories):
             exit(1)
         else:
             yield repo
+
+
+def get_assignee_story(github_object):
+    assignee_result = ""
+    events = github_object.get_issue_events() if type(
+        github_object) is PullRequest.PullRequest else github_object.get_events()
+    for event in events:
+        if event.event == "assigned" or event.event == "unassigned":
+            date = event.created_at
+            if event.event == "assigned":
+                assigner = github_object.user.login
+                assignee = event.assignee.login
+                assignee_result += f"{date}: {assigner} -> {assignee}; "
+            else:
+                assigner = github_object.user.login
+                assignee = event.assignee.login
+                assignee_result += f"{date}: {assigner} -/> {assignee}; "
+    return assignee_result
 
 
 def log_commit_to_csv(info, csv_name):
@@ -69,7 +87,7 @@ def log_issue_to_csv(info, csv_name):
     fieldnames = ['repository name', 'number', 'title', 'state', 'task', 'created at', 'creator name', 'creator login',
                   'creator email', 'closer name', 'closer login', 'closer email', 'closed at', 'comment body',
                   'comment created at', 'comment author name', 'comment author login', 'comment author email',
-                  'assignee story',]
+                  'assignee story', ]
     with open(csv_name, 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writerow(info)
@@ -100,20 +118,7 @@ def log_repository_issues(repository: Repository, csv_name):
             'assignee story': EMPTY_FIELD,
         }
 
-        assignee_result = ""
-        events = issue.get_events()
-        for event in events:
-            if event.event == "assigned" or event.event == "unassigned":
-                date = event.created_at
-                if event.event == "assigned":
-                    assigner = "placeholder"  # event.actor не работает (баг pygithub)
-                    assignee = event.assignee.login
-                    assignee_result += f"{date}: {assigner} -> {assignee}; "
-                else:
-                    assigner = "placeholder"  # event.actor не работает (баг pygithub)
-                    assignee = event.assignee.login
-                    assignee_result += f"{date}: {assigner} -/> {assignee}; "
-        info_tmp['assignee story'] = assignee_result
+        info_tmp['assignee story'] = get_assignee_story(issue)
 
         if issue.user is not None:
             info_tmp['creator name'] = issue.user.name
@@ -185,20 +190,7 @@ def log_repositories_pr(repository: Repository, csv_name):
             info_tmp['merger login'] = pull.merged_by.login
             info_tmp['merger email'] = pull.merged_by.email
 
-        assignee_result = ""
-        events = pull.get_issue_events()
-        for event in events:
-            if event.event == "assigned" or event.event == "unassigned":
-                date = event.created_at
-                if event.event == "assigned":
-                    assigner = "placeholder"  # event.actor не работает (баг pygithub)
-                    assignee = event.assignee.login
-                    assignee_result += f"{date}: {assigner} -> {assignee}; "
-                else:
-                    assigner = "placeholder"  # event.actor не работает (баг pygithub)
-                    assignee = event.assignee.login
-                    assignee_result += f"{date}: {assigner} -/> {assignee}; "
-        info_tmp['assignee story'] = assignee_result
+        info_tmp['assignee story'] = get_assignee_story(pull)
 
         if pull.get_comments().totalCount > 0:
             for comment in pull.get_comments():
