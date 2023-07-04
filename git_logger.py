@@ -41,8 +41,10 @@ def log_commit_to_stdout(info):
     print(info)
 
 
-def log_repository_commits(repository: Repository, csv_name):
+def log_repository_commits(repository: Repository, csv_name, start, finish):
     for commit in repository.get_commits():
+        if commit.commit.author.date < start or commit.commit.author.date > finish:
+            continue
         if commit.commit is not None:
             info = {'repository name': repository.full_name,
                     'commit id': commit.commit.sha,
@@ -75,8 +77,10 @@ def log_issue_to_stdout(info):
     print(info)
 
 
-def log_repository_issues(repository: Repository, csv_name):
+def log_repository_issues(repository: Repository, csv_name, start, finish):
     for issue in repository.get_issues(state='all'):
+        if issue.created_at < start or issue.created_at > finish:
+            continue
         info_tmp = {
             'repository name': repository.full_name, 'number': issue.number, 'title': issue.title,
             'state': issue.state, 'task': issue.body,
@@ -133,8 +137,10 @@ def log_pr_to_stdout(info):
     print(info)
 
 
-def log_repositories_pr(repository: Repository, csv_name):
+def log_repositories_pr(repository: Repository, csv_name, start, finish):
     for pull in repository.get_pulls(state='all'):
+        if pull.created_at < start or pull.created_at > finish:
+            continue
         info_tmp = {
             'repository name': repository.full_name,
             'title': pull.title,
@@ -178,7 +184,7 @@ def log_repositories_pr(repository: Repository, csv_name):
             log_pr_to_stdout(info_tmp)
 
 
-def log_pull_requests(client: Github, repositories, csv_name):
+def log_pull_requests(client: Github, repositories, csv_name, start, finish):
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(
@@ -207,10 +213,10 @@ def log_pull_requests(client: Github, repositories, csv_name):
         )
 
     for repo in get_next_repo(client, repositories):
-        log_repositories_pr(repo, csv_name)
+        log_repositories_pr(repo, csv_name, start, finish)
 
 
-def log_issues(client: Github, repositories, csv_name):
+def log_issues(client: Github, repositories, csv_name, start, finish):
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(
@@ -235,10 +241,10 @@ def log_issues(client: Github, repositories, csv_name):
         )
 
     for repo in get_next_repo(client, repositories):
-        log_repository_issues(repo, csv_name)
+        log_repository_issues(repo, csv_name, start, finish)
 
 
-def log_commits(client: Github, repositories, csv_name):
+def log_commits(client: Github, repositories, csv_name, start, finish):
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(
@@ -254,4 +260,4 @@ def log_commits(client: Github, repositories, csv_name):
         )
 
     for repo in get_next_repo(client, repositories):
-        log_repository_commits(repo, csv_name)
+        log_repository_commits(repo, csv_name, start, finish)
