@@ -3,6 +3,8 @@ import pytz
 
 from github import Github, Repository, GithubException
 
+from github import Github, Repository, GithubException, PullRequest
+
 EMPTY_FIELD = 'Empty field'
 
 
@@ -31,6 +33,24 @@ def get_next_repo(client: Github, repositories):
             exit(1)
         else:
             yield repo
+
+
+def get_assignee_story(github_object):
+    assignee_result = ""
+    events = github_object.get_issue_events() if type(
+        github_object) is PullRequest.PullRequest else github_object.get_events()
+    for event in events:
+        if event.event == "assigned" or event.event == "unassigned":
+            date = event.created_at
+            if event.event == "assigned":
+                assigner = github_object.user.login
+                assignee = event.assignee.login
+                assignee_result += f"{date}: {assigner} -> {assignee}; "
+            else:
+                assigner = github_object.user.login
+                assignee = event.assignee.login
+                assignee_result += f"{date}: {assigner} -/> {assignee}; "
+    return assignee_result
 
 
 def log_commit_to_csv(info, csv_name):
@@ -73,7 +93,8 @@ def log_repository_commits(repository: Repository, csv_name, start, finish):
 def log_issue_to_csv(info, csv_name):
     fieldnames = ['repository name', 'number', 'title', 'state', 'task', 'created at', 'creator name', 'creator login',
                   'creator email', 'closer name', 'closer login', 'closer email', 'closed at', 'comment body',
-                  'comment created at', 'comment author name', 'comment author login', 'comment author email']
+                  'comment created at', 'comment author name', 'comment author login', 'comment author email',
+                  'assignee story', ]
     with open(csv_name, 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writerow(info)
@@ -104,7 +125,10 @@ def log_repository_issues(repository: Repository, csv_name, start, finish):
             'comment author name': EMPTY_FIELD,
             'comment author login': EMPTY_FIELD,
             'comment author email': EMPTY_FIELD,
+            'assignee story': EMPTY_FIELD,
         }
+
+        info_tmp['assignee story'] = get_assignee_story(issue)
 
         if issue.user is not None:
             info_tmp['creator name'] = issue.user.name
@@ -112,8 +136,8 @@ def log_repository_issues(repository: Repository, csv_name, start, finish):
 
         if issue.closed_by is not None:
             info_tmp['closed at'] = issue.closed_at
-            info_tmp['creator name'] = issue.closed_by.name
-            info_tmp['creator login'] = issue.user.login
+            info_tmp['closer name'] = issue.closed_by.name
+            info_tmp['closer login'] = issue.user.login
 
         if issue.get_comments().totalCount > 0:
             for comment in issue.get_comments():
@@ -135,7 +159,7 @@ def log_pr_to_csv(info, csv_name):
                   'creator login', 'creator email',
                   'changed files', 'comment body', 'comment created at', 'comment author name', 'comment author login',
                   'comment author email', 'merger name', 'merger login', 'merger email', 'source branch',
-                  'target branch']
+                  'target branch', 'assignee story', ]
     with open(csv_name, 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writerow(info)
@@ -172,12 +196,15 @@ def log_repositories_pr(repository: Repository, csv_name, start, finish):
             'merger email': EMPTY_FIELD,
             'source branch': pull.head.ref,
             'target branch': pull.base.ref,
+            'assignee story': EMPTY_FIELD,
         }
 
         if pull.merged_by is not None:
             info_tmp['merger name'] = pull.merged_by.name
             info_tmp['merger login'] = pull.merged_by.login
             info_tmp['merger email'] = pull.merged_by.email
+
+        info_tmp['assignee story'] = get_assignee_story(pull)
 
         if pull.get_comments().totalCount > 0:
             for comment in pull.get_comments():
@@ -220,6 +247,7 @@ def log_pull_requests(client: Github, repositories, csv_name, start, finish):
                 'merger email',
                 'source branch',
                 'target branch',
+                'assignee story',
             )
         )
 
@@ -239,8 +267,10 @@ def log_issues(client: Github, repositories, csv_name, start, finish):
                 'task',
                 'created at',
                 'creator name',
+                'creator login',
                 'creator email',
                 'closer name',
+                'closer login',
                 'closer email',
                 'closed at',
                 'comment body',
@@ -248,6 +278,7 @@ def log_issues(client: Github, repositories, csv_name, start, finish):
                 'comment author name',
                 'comment author login',
                 'comment author email',
+                'assignee story',
             )
         )
 
