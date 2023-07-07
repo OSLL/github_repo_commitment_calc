@@ -101,8 +101,8 @@ def log_repository_issues(repository: Repository, csv_name):
 
         if issue.closed_by is not None:
             info_tmp['closed at'] = issue.closed_at
-            info_tmp['creator name'] = issue.closed_by.name
-            info_tmp['creator login'] = issue.user.login
+            info_tmp['closer name'] = issue.closed_by.name
+            info_tmp['closer login'] = issue.user.login
 
         if issue.get_comments().totalCount > 0:
             for comment in issue.get_comments():
@@ -222,8 +222,10 @@ def log_issues(client: Github, repositories, csv_name):
                 'task',
                 'created at',
                 'creator name',
+                'creator login',
                 'creator email',
                 'closer name',
+                'closer login',
                 'closer email',
                 'closed at',
                 'comment body',
