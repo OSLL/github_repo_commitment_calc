@@ -1,7 +1,10 @@
-from github import Github, Repository, GithubException
 import csv
+import pytz
+
+from github import Github, Repository, GithubException
 
 EMPTY_FIELD = 'Empty field'
+
 
 def login(token):
     client = Github(login_or_token=token)
@@ -31,7 +34,8 @@ def get_next_repo(client: Github, repositories):
 
 
 def log_commit_to_csv(info, csv_name):
-    fieldnames = ['repository name', 'commit id', 'author name', 'author login', 'author email', 'date and time', 'changed files']
+    fieldnames = ['repository name', 'commit id', 'author name', 'author login', 'author email', 'date and time',
+                  'changed files']
     with open(csv_name, 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writerow(info)
@@ -43,7 +47,9 @@ def log_commit_to_stdout(info):
 
 def log_repository_commits(repository: Repository, csv_name, start, finish):
     for commit in repository.get_commits():
-        if commit.commit.author.date < start or commit.commit.author.date > finish:
+        if commit.commit.author.date.astimezone(
+                pytz.timezone('Europe/Moscow')) < start or commit.commit.author.date.astimezone(
+                pytz.timezone('Europe/Moscow')) > finish:
             continue
         if commit.commit is not None:
             info = {'repository name': repository.full_name,
@@ -51,7 +57,7 @@ def log_repository_commits(repository: Repository, csv_name, start, finish):
                     'author name': commit.commit.author.name,
                     'author login': EMPTY_FIELD,
                     'author email': EMPTY_FIELD,
-                    'date and time': commit.commit.author.date,
+                    'date and time': commit.commit.author.date.astimezone(pytz.timezone('Europe/Moscow')),
                     'changed files': '; '.join([file.filename for file in commit.files])}
 
             if commit.author is not None:
@@ -79,12 +85,13 @@ def log_issue_to_stdout(info):
 
 def log_repository_issues(repository: Repository, csv_name, start, finish):
     for issue in repository.get_issues(state='all'):
-        if issue.created_at < start or issue.created_at > finish:
+        if issue.created_at.astimezone(pytz.timezone('Europe/Moscow')) < start or issue.created_at.astimezone(
+                pytz.timezone('Europe/Moscow')) > finish:
             continue
         info_tmp = {
             'repository name': repository.full_name, 'number': issue.number, 'title': issue.title,
             'state': issue.state, 'task': issue.body,
-            'created at': issue.created_at,
+            'created at': issue.created_at.astimezone(pytz.timezone('Europe/Moscow')),
             'creator name': EMPTY_FIELD,
             'creator login': EMPTY_FIELD,
             'creator email': EMPTY_FIELD if issue.user.email is None else issue.user.email,
@@ -124,10 +131,11 @@ def log_repository_issues(repository: Repository, csv_name, start, finish):
 
 
 def log_pr_to_csv(info, csv_name):
-    fieldnames = ['repository name', 'title', 'state', 'commit into', 'commit from', 'created at', 'creator name',
+    fieldnames = ['repository name', 'title', 'id', 'state', 'commit into', 'commit from', 'created at', 'creator name',
                   'creator login', 'creator email',
                   'changed files', 'comment body', 'comment created at', 'comment author name', 'comment author login',
-                  'comment author email', 'merger name', 'merger login', 'merger email', 'source branch', 'target branch']
+                  'comment author email', 'merger name', 'merger login', 'merger email', 'source branch',
+                  'target branch']
     with open(csv_name, 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writerow(info)
@@ -139,15 +147,17 @@ def log_pr_to_stdout(info):
 
 def log_repositories_pr(repository: Repository, csv_name, start, finish):
     for pull in repository.get_pulls(state='all'):
-        if pull.created_at < start or pull.created_at > finish:
+        if pull.created_at.astimezone(pytz.timezone('Europe/Moscow')) < start or pull.created_at.astimezone(
+                pytz.timezone('Europe/Moscow')) > finish:
             continue
         info_tmp = {
             'repository name': repository.full_name,
             'title': pull.title,
+            'id': pull.number,
             'state': pull.state,
             'commit into': pull.base.label,
             'commit from': pull.head.label,
-            'created at': pull.created_at,
+            'created at': pull.created_at.astimezone(pytz.timezone('Europe/Moscow')),
             'creator name': EMPTY_FIELD if pull.user.name is None else pull.user.name,
             'creator login': pull.user.login,
             'creator email': pull.user.email,
@@ -191,6 +201,7 @@ def log_pull_requests(client: Github, repositories, csv_name, start, finish):
             (
                 'repository name',
                 'title',
+                'id',
                 'state',
                 'commit into',
                 'commit from',
