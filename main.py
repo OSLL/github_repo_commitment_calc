@@ -26,9 +26,9 @@ def main():
         if not args.p and not args.i:
             git_logger.log_commits(client, repositories, csv_name)
         if args.p:
-            git_logger.log_pull_requests(client, repositories, csv_name)
+            git_logger.log_pull_requests(client, repositories, csv_name, token)
         if args.i:
-            git_logger.log_issues(client, repositories, csv_name)
+            git_logger.log_issues(client, repositories, csv_name, token)
 
 
 if __name__ == '__main__':
