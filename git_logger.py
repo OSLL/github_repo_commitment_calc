@@ -77,7 +77,7 @@ def log_repository_commits(repository: Repository, csv_name, start, finish):
                     'author name': commit.commit.author.name,
                     'author login': EMPTY_FIELD,
                     'author email': EMPTY_FIELD,
-                    'date and time': commit.commit.author.date.astimezone(pytz.timezone(timezone)),
+                    'date and time': commit.commit.author.date,
                     'changed files': '; '.join([file.filename for file in commit.files]),
                     'commit id': commit.commit.sha}
 
@@ -175,7 +175,7 @@ def log_repository_issues(repository: Repository, csv_name, token, start, finish
         info_tmp = {
             'repository name': repository.full_name, 'number': issue.number, 'title': issue.title,
             'state': issue.state, 'task': issue.body,
-            'created at': issue.created_at.astimezone(pytz.timezone(timezone)),
+            'created at': issue.created_at,
             'creator name': EMPTY_FIELD,
             'creator login': EMPTY_FIELD,
             'creator email': EMPTY_FIELD if issue.user.email is None else issue.user.email,
@@ -294,7 +294,7 @@ def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
             'state': pull.state,
             'commit into': pull.base.label,
             'commit from': pull.head.label,
-            'created at': pull.created_at.astimezone(pytz.timezone(timezone)),
+            'created at': pull.created_at,
             'creator name': EMPTY_FIELD if pull.user.name is None else pull.user.name,
             'creator login': pull.user.login,
             'creator email': pull.user.email,
