@@ -23,7 +23,7 @@ def parse_time(datetime_str):
     start = [int(i) for i in start]
     start_datetime = datetime(year=start[0], month=start[1], day=start[2], hour=start[3], minute=start[4],
                               second=start[5])
-    return start_datetime.astimezone(pytz.timezone('Europe/Moscow'))
+    return start_datetime.astimezone(pytz.timezone(git_logger.timezone))
 
 
 def main():

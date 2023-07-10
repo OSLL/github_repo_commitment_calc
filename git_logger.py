@@ -6,7 +6,7 @@ import pytz
 from github import Github, Repository, GithubException, PullRequest
 
 EMPTY_FIELD = 'Empty field'
-
+timezone = 'Europe/Moscow'
 
 def login(token):
     client = Github(login_or_token=token)
@@ -69,17 +69,17 @@ def log_commit_to_stdout(info):
 def log_repository_commits(repository: Repository, csv_name, start, finish):
     for commit in repository.get_commits():
         if commit.commit.author.date.astimezone(
-                pytz.timezone('Europe/Moscow')) < start or commit.commit.author.date.astimezone(
-                pytz.timezone('Europe/Moscow')) > finish:
+                pytz.timezone(timezone)) < start or commit.commit.author.date.astimezone(
+                pytz.timezone(timezone)) > finish:
             continue
         if commit.commit is not None:
             info = {'repository name': repository.full_name,
                     'author name': commit.commit.author.name,
                     'author login': EMPTY_FIELD,
                     'author email': EMPTY_FIELD,
-                    'date and time': commit.commit.author.date.astimezone(pytz.timezone('Europe/Moscow')),
+                    'date and time': commit.commit.author.date.astimezone(pytz.timezone(timezone)),
                     'changed files': '; '.join([file.filename for file in commit.files]),
-                    'commit id': commit.commit.sha}}
+                    'commit id': commit.commit.sha}
 
             if commit.author is not None:
                 info['author login'] = commit.author.login
@@ -169,13 +169,13 @@ def get_connected_pulls(issue_number, repo_owner, repo_name, token):
 
 def log_repository_issues(repository: Repository, csv_name, token, start, finish):
     for issue in repository.get_issues(state='all'):
-        if issue.created_at.astimezone(pytz.timezone('Europe/Moscow')) < start or issue.created_at.astimezone(
-                pytz.timezone('Europe/Moscow')) > finish:
+        if issue.created_at.astimezone(pytz.timezone(timezone)) < start or issue.created_at.astimezone(
+                pytz.timezone(timezone)) > finish:
             continue
         info_tmp = {
             'repository name': repository.full_name, 'number': issue.number, 'title': issue.title,
             'state': issue.state, 'task': issue.body,
-            'created at': issue.created_at.astimezone(pytz.timezone('Europe/Moscow')),
+            'created at': issue.created_at.astimezone(pytz.timezone(timezone)),
             'creator name': EMPTY_FIELD,
             'creator login': EMPTY_FIELD,
             'creator email': EMPTY_FIELD if issue.user.email is None else issue.user.email,
@@ -284,8 +284,8 @@ def get_related_issues(pull_request_number, repo_owner, repo_name, token):
 
 def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
     for pull in repository.get_pulls(state='all'):
-        if pull.created_at.astimezone(pytz.timezone('Europe/Moscow')) < start or pull.created_at.astimezone(
-                pytz.timezone('Europe/Moscow')) > finish:
+        if pull.created_at.astimezone(pytz.timezone(timezone)) < start or pull.created_at.astimezone(
+                pytz.timezone(timezone)) > finish:
             continue
         info_tmp = {
             'repository name': repository.full_name,
@@ -294,7 +294,7 @@ def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
             'state': pull.state,
             'commit into': pull.base.label,
             'commit from': pull.head.label,
-            'created at': pull.created_at.astimezone(pytz.timezone('Europe/Moscow')),
+            'created at': pull.created_at.astimezone(pytz.timezone(timezone)),
             'creator name': EMPTY_FIELD if pull.user.name is None else pull.user.name,
             'creator login': pull.user.login,
             'creator email': pull.user.email,
