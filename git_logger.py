@@ -1,8 +1,6 @@
 import csv
 import pytz
 
-from github import Github, Repository, GithubException
-
 from github import Github, Repository, GithubException, PullRequest
 
 EMPTY_FIELD = 'Empty field'
@@ -10,6 +8,7 @@ EMPTY_FIELD = 'Empty field'
 
 def login(token):
     client = Github(login_or_token=token)
+
     try:
         client.get_user().login
     except GithubException as err:
@@ -73,7 +72,6 @@ def log_repository_commits(repository: Repository, csv_name, start, finish):
             continue
         if commit.commit is not None:
             info = {'repository name': repository.full_name,
-                    'commit id': commit.commit.sha,
                     'author name': commit.commit.author.name,
                     'author login': EMPTY_FIELD,
                     'author email': EMPTY_FIELD,
@@ -94,7 +92,8 @@ def log_issue_to_csv(info, csv_name):
     fieldnames = ['repository name', 'number', 'title', 'state', 'task', 'created at', 'creator name', 'creator login',
                   'creator email', 'closer name', 'closer login', 'closer email', 'closed at', 'comment body',
                   'comment created at', 'comment author name', 'comment author login', 'comment author email',
-                  'assignee story', ]
+                  'assignee story', 'connected pull requests']
+
     with open(csv_name, 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writerow(info)
@@ -126,7 +125,11 @@ def log_repository_issues(repository: Repository, csv_name, start, finish):
             'comment author login': EMPTY_FIELD,
             'comment author email': EMPTY_FIELD,
             'assignee story': EMPTY_FIELD,
+            'connected pull requests': EMPTY_FIELD
         }
+        if issue.number is not None:
+            info_tmp['connected pull requests'] = get_connected_pulls(issue.number, repository.owner, repository.name,
+                                                                      token)
 
         info_tmp['assignee story'] = get_assignee_story(issue)
 
@@ -159,7 +162,7 @@ def log_pr_to_csv(info, csv_name):
                   'creator login', 'creator email',
                   'changed files', 'comment body', 'comment created at', 'comment author name', 'comment author login',
                   'comment author email', 'merger name', 'merger login', 'merger email', 'source branch',
-                  'target branch', 'assignee story', ]
+                  'target branch', 'assignee story', 'related issues']
     with open(csv_name, 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writerow(info)
@@ -197,7 +200,10 @@ def log_repositories_pr(repository: Repository, csv_name, start, finish):
             'source branch': pull.head.ref,
             'target branch': pull.base.ref,
             'assignee story': EMPTY_FIELD,
+            'related issues': EMPTY_FIELD
         }
+        if pull.issue_url is not None:
+            info_tmp['related issues'] = get_related_issues(pull.number, repository.owner, repository.name, token)
 
         if pull.merged_by is not None:
             info_tmp['merger name'] = pull.merged_by.name
@@ -247,7 +253,9 @@ def log_pull_requests(client: Github, repositories, csv_name, start, finish):
                 'merger email',
                 'source branch',
                 'target branch',
+                'related issues'
                 'assignee story',
+                'related issues'
             )
         )
 
@@ -278,7 +286,9 @@ def log_issues(client: Github, repositories, csv_name, start, finish):
                 'comment author name',
                 'comment author login',
                 'comment author email',
+                'connected pull requests'
                 'assignee story',
+                'connected pull requests'
             )
         )
 
@@ -292,12 +302,12 @@ def log_commits(client: Github, repositories, csv_name, start, finish):
         writer.writerow(
             (
                 'repository name',
-                'commit id',
                 'author name',
                 'author login',
                 'author email',
                 'date and time',
                 'changed files',
+                'commit id'
             )
         )
 

@@ -49,5 +49,6 @@ def main():
             git_logger.log_issues(client, repositories, csv_name, start, finish)
 
 
+
 if __name__ == '__main__':
     main()
