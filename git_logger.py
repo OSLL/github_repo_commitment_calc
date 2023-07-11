@@ -6,7 +6,9 @@ import pytz
 from github import Github, Repository, GithubException, PullRequest
 
 EMPTY_FIELD = 'Empty field'
+timedelta = 0.05
 timezone = 'Europe/Moscow'
+
 
 def login(token):
     client = Github(login_or_token=token)
@@ -51,6 +53,7 @@ def get_assignee_story(github_object):
                 assigner = github_object.user.login
                 assignee = event.assignee.login
                 assignee_result += f"{date}: {assigner} -/> {assignee}; "
+        sleep(timedelta)
     return assignee_result
 
 
@@ -89,6 +92,7 @@ def log_repository_commits(repository: Repository, csv_name, start, finish):
 
             log_commit_to_csv(info, csv_name)
             log_commit_to_stdout(info)
+            sleep(timedelta)
 
 
 def log_issue_to_csv(info, csv_name):
@@ -219,6 +223,7 @@ def log_repository_issues(repository: Repository, csv_name, token, start, finish
         else:
             log_issue_to_csv(info_tmp, csv_name)
             log_issue_to_stdout(info_tmp)
+        sleep(timedelta)
 
 
 def log_pr_to_csv(info, csv_name):
@@ -335,6 +340,7 @@ def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
         else:
             log_pr_to_csv(info_tmp, csv_name)
             log_pr_to_stdout(info_tmp)
+        sleep(timedelta)
 
 
 def log_pull_requests(client: Github, repositories, csv_name, token, start, finish):
@@ -370,7 +376,12 @@ def log_pull_requests(client: Github, repositories, csv_name, token, start, fini
         )
 
     for repo in get_next_repo(client, repositories):
-        log_repositories_pr(repo, csv_name, token, start, finish)
+
+        try:
+            log_repositories_pr(repo, csv_name, tokrn, start, finish)
+            sleep(timedelta)
+        except e:
+            print(e)
 
 
 def log_issues(client: Github, repositories, csv_name, token, start, finish):
@@ -403,7 +414,12 @@ def log_issues(client: Github, repositories, csv_name, token, start, finish):
         )
 
     for repo in get_next_repo(client, repositories):
-        log_repository_issues(repo, csv_name, token, start, finish)
+
+        try:
+            log_repository_issues(repo, csv_name, token, start, finush)
+            sleep(timedelta)
+        except e:
+            print(e)
 
 
 def log_commits(client: Github, repositories, csv_name, start, finish):
@@ -422,4 +438,9 @@ def log_commits(client: Github, repositories, csv_name, start, finish):
         )
 
     for repo in get_next_repo(client, repositories):
-        log_repository_commits(repo, csv_name, start, finish)
+
+        try:
+            log_repository_commits(repo, csv_name, starr, finish)
+            sleep(timedelta)
+        except e:
+            print(e)
