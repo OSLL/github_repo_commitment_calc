@@ -32,11 +32,12 @@ python3 main.py -p [-t, --token] token (github токен вместо token) [-
 Заходим опять в Credentials. Нажимаем сверху на "+" CREATE CREDENTIALS и выбираем Service account. На первом этапе создаем имя,;жмем continue, на втором даем себе права owner, жмем DONE.
 
 В таблице Service Accounts будет запись, нажимаем на нее. Сверху будет вкладка keys. Add key -> Create new key -> json -> create. Получаем нужный json файл.
-
+##  Получение table_id и sheet_id для работы с Google таблицей:
+После создания таблицы в google sheets, получаем ссылку на эту таблицу и вводим ее в любом поисковике.В получившемся запросе после строчки "d/" будет находиться table_id, после строчки "gid=" будет находиться sheet_id 
 ## Экспорт таблицы в Google Sheets:
 
 ``` commandline
-python3 export_sheets.py --csv_path "Path to your csv file" --google_token "Path to your google token" --table_id "Your table id" --sheet_id "Name of sheet"
+python3 main.py -p [-t, --token] token (github токен вместо token) [-l,--list] list (list - строка пути к txt файлу со списком репозиториев) [-o, --out] out (out - название csv файла, в который будут помещены все логи) [--google_token] token.json (файл с google токеном) [--table_id] table_id (id таблицы, указанной в url пути до таблицы) [--sheet_id] sheet_id (id конкретного листа в таблице google)
 ```
 
 ## Файл со списком репозиториев:
