@@ -1,11 +1,12 @@
 import csv
 import requests
 import json
+import pytz
 
 from github import Github, Repository, GithubException, PullRequest
 
 EMPTY_FIELD = 'Empty field'
-
+timezone = 'Europe/Moscow'
 
 def login(token):
     client = Github(login_or_token=token)
@@ -65,8 +66,12 @@ def log_commit_to_stdout(info):
     print(info)
 
 
-def log_repository_commits(repository: Repository, csv_name):
+def log_repository_commits(repository: Repository, csv_name, start, finish):
     for commit in repository.get_commits():
+        if commit.commit.author.date.astimezone(
+                pytz.timezone(timezone)) < start or commit.commit.author.date.astimezone(
+                pytz.timezone(timezone)) > finish:
+            continue
         if commit.commit is not None:
             info = {'repository name': repository.full_name,
                     'author name': commit.commit.author.name,
@@ -160,11 +165,13 @@ def get_connected_pulls(issue_number, repo_owner, repo_name, token):
         else:
             return list_url
     return 'Empty field'
+    
 
-
-
-def log_repository_issues(repository: Repository, csv_name, token):
+def log_repository_issues(repository: Repository, csv_name, token, start, finish):
     for issue in repository.get_issues(state='all'):
+        if issue.created_at.astimezone(pytz.timezone(timezone)) < start or issue.created_at.astimezone(
+                pytz.timezone(timezone)) > finish:
+            continue
         info_tmp = {
             'repository name': repository.full_name, 'number': issue.number, 'title': issue.title,
             'state': issue.state, 'task': issue.body,
@@ -215,7 +222,7 @@ def log_repository_issues(repository: Repository, csv_name, token):
 
 
 def log_pr_to_csv(info, csv_name):
-    fieldnames = ['repository name', 'title', 'state', 'commit into', 'commit from', 'created at', 'creator name',
+    fieldnames = ['repository name', 'title', 'id', 'state', 'commit into', 'commit from', 'created at', 'creator name',
                   'creator login', 'creator email',
                   'changed files', 'comment body', 'comment created at', 'comment author name', 'comment author login',
                   'comment author email', 'merger name', 'merger login', 'merger email', 'source branch',
@@ -273,13 +280,17 @@ def get_related_issues(pull_request_number, repo_owner, repo_name, token):
         issue_node = issue["node"]
         list_issues_url.append(issue_node["url"])
     return list_issues_url
+    
 
-
-def log_repositories_pr(repository: Repository, csv_name, token):
+def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
     for pull in repository.get_pulls(state='all'):
+        if pull.created_at.astimezone(pytz.timezone(timezone)) < start or pull.created_at.astimezone(
+                pytz.timezone(timezone)) > finish:
+            continue
         info_tmp = {
             'repository name': repository.full_name,
             'title': pull.title,
+            'id': pull.number,
             'state': pull.state,
             'commit into': pull.base.label,
             'commit from': pull.head.label,
@@ -326,13 +337,14 @@ def log_repositories_pr(repository: Repository, csv_name, token):
             log_pr_to_stdout(info_tmp)
 
 
-def log_pull_requests(client: Github, repositories, csv_name, token):
+def log_pull_requests(client: Github, repositories, csv_name, token, start, finish):
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(
             (
                 'repository name',
                 'title',
+                'id',
                 'state',
                 'commit into',
                 'commit from',
@@ -358,10 +370,10 @@ def log_pull_requests(client: Github, repositories, csv_name, token):
         )
 
     for repo in get_next_repo(client, repositories):
-        log_repositories_pr(repo, csv_name, token)
+        log_repositories_pr(repo, csv_name, token, start, finish)
 
 
-def log_issues(client: Github, repositories, csv_name, token):
+def log_issues(client: Github, repositories, csv_name, token, start, finish):
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(
@@ -391,10 +403,10 @@ def log_issues(client: Github, repositories, csv_name, token):
         )
 
     for repo in get_next_repo(client, repositories):
-        log_repository_issues(repo, csv_name, token)
+        log_repository_issues(repo, csv_name, token, start, finish)
 
 
-def log_commits(client: Github, repositories, csv_name):
+def log_commits(client: Github, repositories, csv_name, start, finish):
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(
@@ -410,4 +422,4 @@ def log_commits(client: Github, repositories, csv_name):
         )
 
     for repo in get_next_repo(client, repositories):
-        log_repository_commits(repo, csv_name)
+        log_repository_commits(repo, csv_name, start, finish)
