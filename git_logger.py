@@ -6,10 +6,7 @@ import pytz
 from github import Github, Repository, GithubException, PullRequest
 
 EMPTY_FIELD = 'Empty field'
-
 timedelta = 0.05
-
-
 timezone = 'Europe/Moscow'
 
 
@@ -387,10 +384,6 @@ def log_pull_requests(client: Github, repositories, csv_name, token, start, fini
             print(e)
 
 
-
-
-
-
 def log_issues(client: Github, repositories, csv_name, token, start, finish):
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
@@ -429,10 +422,6 @@ def log_issues(client: Github, repositories, csv_name, token, start, finish):
             print(e)
 
 
-
-aq
-
-
 def log_commits(client: Github, repositories, csv_name, start, finish):
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
@@ -455,6 +444,3 @@ def log_commits(client: Github, repositories, csv_name, start, finish):
             sleep(timedelta)
         except e:
             print(e)
-
-
-
