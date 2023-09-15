@@ -7,6 +7,7 @@ import export_sheets
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--invites", help="print pending invites", action="store_true")
     parser.add_argument("-p", help="log pull requests", action="store_true")
     parser.add_argument("-i", help="log issues", action="store_true")
     parser.add_argument("-e", help="export table to google sheets", action="store_true")
@@ -57,7 +58,7 @@ def main():
             start = parse_time(args.start.split('-'))
         if args.finish:
             finish = parse_time(args.finish.split('-'))
-        if not args.p and not args.i:
+        if not args.p and not args.i and not args.invites:
             git_logger.log_commits(client, repositories, csv_name, start, finish)
             if (args.e):
                 export_sheets.write_data_to_table(csv_name, args.google_token, args.table_id, args.sheet_id)
@@ -69,7 +70,8 @@ def main():
             git_logger.log_issues(client, repositories, csv_name, token, start, finish)
             if (args.e):
                 export_sheets.write_data_to_table(csv_name, args.google_token, args.table_id, args.sheet_id)
-
+        if args.invites:
+            git_logger.log_invitations(client, repositories, csv_name)
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@ import csv
 import requests
 import json
 import pytz
-
+from time import sleep
 from github import Github, Repository, GithubException, PullRequest
 
 EMPTY_FIELD = 'Empty field'
@@ -422,6 +422,28 @@ def log_issues(client: Github, repositories, csv_name, token, start, finish):
             print(e)
 
 
+def log_invitations(client: Github, repositories, csv_name):
+    with open(csv_name, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(
+            (
+                'repository name',
+                'invited login',
+                'invite creation date',
+                'invitation url'
+            )
+        )
+        for repo in get_next_repo(client, repositories):
+            invitations = repo.get_pending_invitations()
+            for invite in invitations:
+                try:
+                    invite_info = [repo.full_name,invite.invitee.login, invite.created_at.strftime("%d/%m/%Y, %H:%M:%S"), invite.html_url]
+                    writer.writerow(invite_info)
+                    print(invite_info)
+                    sleep(timedelta)
+                except e:
+                    print(e)
+
 def log_commits(client: Github, repositories, csv_name, start, finish):
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
@@ -440,7 +462,7 @@ def log_commits(client: Github, repositories, csv_name, start, finish):
     for repo in get_next_repo(client, repositories):
 
         try:
-            log_repository_commits(repo, csv_name, starr, finish)
+            log_repository_commits(repo, csv_name, start, finish)
             sleep(timedelta)
         except e:
             print(e)
