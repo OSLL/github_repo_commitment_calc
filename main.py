@@ -10,6 +10,7 @@ def parse_args():
     parser.add_argument("--invites", help="print pending invites", action="store_true")
     parser.add_argument("-p", help="log pull requests", action="store_true")
     parser.add_argument("-i", help="log issues", action="store_true")
+    parser.add_argument("-w", help="log wikis", action="store_true")
     parser.add_argument("-e", help="export table to google sheets", action="store_true")
     parser.add_argument('-t', '--token', type=str, required=True, help='token github account')
     parser.add_argument('-l', '--list', type=str, required=True, help='repos names file')
