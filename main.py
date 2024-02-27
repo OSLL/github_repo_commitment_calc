@@ -44,11 +44,6 @@ def parse_time(datetime_str):
                               second=start[5])
     return start_datetime.astimezone(pytz.timezone(git_logger.timezone))
 
-'''
-Мой шаблон(Он здесь временно)
-python3 main.py -w -t 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 -l  /home/hom1e/repolist -o output
-'''
-
 def main():
     args = parse_args()
     token = args.token

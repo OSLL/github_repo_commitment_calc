@@ -7,7 +7,7 @@ def delete_everything_in_folder(folder_path):
     shutil.rmtree(folder_path)
     os.mkdir(folder_path)
 
-path = "/home/hom1e/KAFEDRAAAAA/local"  #Путь к директории для репозитория
+path = "local"  #Путь к директории для репозитория
 
 def wikiparser(client, repositories, csv_name):
     #Создаем список репозиториев из файла
