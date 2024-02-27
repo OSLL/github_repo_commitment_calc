@@ -4,6 +4,7 @@ import pytz
 
 import git_logger
 import export_sheets
+import wikipars
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -43,6 +44,10 @@ def parse_time(datetime_str):
                               second=start[5])
     return start_datetime.astimezone(pytz.timezone(git_logger.timezone))
 
+'''
+Мой шаблон(Он здесь временно)
+python3 main.py -w -t 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 -l  /home/hom1e/repolist -o output
+'''
 
 def main():
     args = parse_args()
@@ -59,7 +64,7 @@ def main():
             start = parse_time(args.start.split('-'))
         if args.finish:
             finish = parse_time(args.finish.split('-'))
-        if not args.p and not args.i and not args.invites:
+        if not args.p and not args.i and not args.invites and not args.w:
             git_logger.log_commits(client, repositories, csv_name, start, finish)
             if (args.e):
                 export_sheets.write_data_to_table(csv_name, args.google_token, args.table_id, args.sheet_id)
@@ -73,6 +78,8 @@ def main():
                 export_sheets.write_data_to_table(csv_name, args.google_token, args.table_id, args.sheet_id)
         if args.invites:
             git_logger.log_invitations(client, repositories, csv_name)
+        if args.w:
+            wikipars.wikiparser(client, repositories, csv_name)
 
 
 if __name__ == '__main__':
