@@ -7,9 +7,8 @@ def delete_everything_in_folder(folder_path):
     shutil.rmtree(folder_path)
     os.mkdir(folder_path)
 
-path = "local"  #Путь к директории для репозитория
-
 def wikiparser(client, repositories, csv_name):
+    path = "local"  #Путь к директории для репозитория
     #Создаем список репозиториев из файла
     with open(repositories, 'r') as file:
         list_repos = [x for x in file.read().split('\n') if x]
