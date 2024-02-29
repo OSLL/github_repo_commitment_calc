@@ -416,7 +416,7 @@ def log_issues(client: Github, repositories, csv_name, token, start, finish):
     for repo in get_next_repo(client, repositories):
 
         try:
-            log_repository_issues(repo, csv_name, token, start, finush)
+            log_repository_issues(repo, csv_name, token, start, finish)
             sleep(timedelta)
         except e:
             print(e)
