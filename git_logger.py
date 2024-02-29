@@ -378,9 +378,9 @@ def log_pull_requests(client: Github, repositories, csv_name, token, start, fini
     for repo in get_next_repo(client, repositories):
 
         try:
-            log_repositories_pr(repo, csv_name, tokrn, start, finish)
+            log_repositories_pr(repo, csv_name, token, start, finish)
             sleep(timedelta)
-        except e:
+        except Exception as e:
             print(e)
 
 
@@ -416,9 +416,9 @@ def log_issues(client: Github, repositories, csv_name, token, start, finish):
     for repo in get_next_repo(client, repositories):
 
         try:
-            log_repository_issues(repo, csv_name, token, start, finush)
+            log_repository_issues(repo, csv_name, token, start, finish)
             sleep(timedelta)
-        except e:
+        except Exception as e:
             print(e)
 
 
@@ -441,7 +441,7 @@ def log_invitations(client: Github, repositories, csv_name):
                     writer.writerow(invite_info)
                     print(invite_info)
                     sleep(timedelta)
-                except e:
+                except Exception as e:
                     print(e)
 
 def log_commits(client: Github, repositories, csv_name, start, finish):
@@ -450,12 +450,12 @@ def log_commits(client: Github, repositories, csv_name, start, finish):
         writer.writerow(
             (
                 'repository name',
+                'commit id',
                 'author name',
                 'author login',
                 'author email',
                 'date and time',
-                'changed files',
-                'commit id'
+                'changed files'
             )
         )
 
@@ -464,5 +464,5 @@ def log_commits(client: Github, repositories, csv_name, start, finish):
         try:
             log_repository_commits(repo, csv_name, start, finish)
             sleep(timedelta)
-        except e:
+        except Exception as e:
             print(e)
