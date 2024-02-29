@@ -450,12 +450,12 @@ def log_commits(client: Github, repositories, csv_name, start, finish):
         writer.writerow(
             (
                 'repository name',
+                'commit id',
                 'author name',
                 'author login',
                 'author email',
                 'date and time',
-                'changed files',
-                'commit id'
+                'changed files'
             )
         )
 
