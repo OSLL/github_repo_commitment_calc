@@ -466,3 +466,55 @@ def log_commits(client: Github, repositories, csv_name, start, finish):
             sleep(timedelta)
         except Exception as e:
             print(e)
+            
+def log_contributors_to_csv(info, csv_name):
+    fieldnames = ['repository name', 'login', 'email', 'id', 'node_id', 'url', 'type', 'bio', 'permissions', 'site_admin']
+    with open(csv_name, 'a', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writerow(info)
+
+
+def log_repository_contributors(repository: Repository, csv_name):
+    contributors = repository.get_contributors()
+    for contributor in contributors:
+        info_tmp = {
+            'repository name': repository.full_name,
+            'login': contributor.login,
+            'email': EMPTY_FIELD if contributor.email is None else contributor.email,
+            'id': contributor.id,
+            'node_id': contributor.node_id,
+            'url': contributor.url,
+            'type': contributor.type,
+            'bio': EMPTY_FIELD if contributor.bio is None else contributor.bio,
+            'permissions': EMPTY_FIELD if contributor.permissions is None else contributor.permissions,
+            'site_admin': contributor.site_admin
+        }
+        log_contributors_to_csv(info_tmp, csv_name)
+        print(info_tmp)
+        sleep(timedelta)
+
+
+def log_contributors(client: Github, repositories, csv_name):
+    with open(csv_name, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(
+            (
+                'repository name',
+                'login',
+                'email',
+                'id',
+                'node_id',
+                'url',
+                'type',
+                'bio',
+                'permissions',
+                'site_admin'
+            )
+        )
+    for repo in get_next_repo(client, repositories):
+
+        try:
+            log_repository_contributors(repo, csv_name)
+            sleep(timedelta)
+        except Exception as e:
+            print(e)
