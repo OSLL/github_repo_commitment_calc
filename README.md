@@ -26,8 +26,10 @@ python3 main.py -p [-t, --token] token (github токен вместо token) [-
 ```commandline
 python3 main.py --invites [-t, --token] token (github токен вместо token) [-l, --list]  list (list - строка пути к txt файлу со списком репозиториев) [-o, --out] out (out - название csv файла, в который будут помещены все логи)
 ```
-
-
+5. Логирование contributors
+```commandline
+python3 main.py -c [-t, --token] token (github токен вместо token) [-l, --list]  list (list - строка пути к txt файлу со списком репозиториев) [-o, --out] out (out - название csv файла, в который будут помещены все логи)
+```
 
 ##  Получение токена для работы с Google таблицей:
 Сначала нужно создать проект на сайте  [Google Cloud](https://console.cloud.google.com/). Выбираем название проекта, жмем на кнопку "Create".
