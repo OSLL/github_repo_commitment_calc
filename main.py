@@ -15,7 +15,7 @@ def parse_args():
     parser.add_argument("-e", help="export table to google sheets", action="store_true")
     parser.add_argument('-t', '--token', type=str, required=True, help='token github account')
     parser.add_argument('-l', '--list', type=str, required=True, help='repos names file')
-    parser.add_argument("--download_repos", type=str, help="path to downloaded repositories")
+    parser.add_argument("--download_repos", type=str, help="path to downloaded repositories", default='./')
     parser.add_argument('-o', '--out', type=str, required=True, help='output filename')
     parser.add_argument('-s', '--start', type=str, required=False, help='start time', default='2000/01/01-00:00:00')
     parser.add_argument('-f', '--finish', type=str, required=False, help='finish time', default='2400/01/01-00:00:00')
