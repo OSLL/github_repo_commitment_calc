@@ -28,19 +28,32 @@ def wikiparser(client, repositories, csv_name):
             continue
 
         #Вывод изменений
-        prev_commits = list(repo.iter_commits(all=True))
+        EMPTY_TREE_SHA = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+        wiki_commits = list(repo.iter_commits(all=True))
         activity = {"A" : "Страница добавлена", "M" : "Страница изменена", "D" : "Страница удалена", "R":"Страница переименована"}
-        for ind in range(len(prev_commits[:-1])):
-            commit = prev_commits[ind]
-            print("login:", commit.author)
-            print("datetime:", time.asctime(time.localtime(commit.committed_date)))
-            print("page:", *[diff.b_path for diff in prev_commits[ind + 1].diff(commit)])
-            print("revision id:", commit)
-            print("action:", *[activity[diff.change_type] for diff in prev_commits[ind + 1].diff(commit)])
-            print("diff:", commit.diff())
+        data_changes = []
+        for commit in wiki_commits:
+            data_commit = dict()
+            parent = commit.parents
+            data_commit["login"] = commit.author
+            data_commit["datetime"] = time.asctime(time.localtime(commit.committed_date))
+            if parent:
+                data_commit["page"] = [diff.b_path for diff in parent[0].diff(commit)]
+                data_commit["action"] = [activity[diff.change_type] for diff in parent[0].diff(commit)]
+            else:
+                #Первый коммит
+                data_commit["page"] = [diff.b_path for diff in commit.diff(EMPTY_TREE_SHA)]
+                data_commit["action"] = [activity["A"]]
+            data_commit["revision id"] = commit
+            data_commit["diff"] = commit.diff()
+            for i in data_commit:
+                print(i, data_commit[i], sep=': ')
             print("-------------------------------")
+            data_changes.append(data_commit)
 
     #Вывод репозиториев, с которыми возникли ошибки
     print("!=====Проблемные репозитории=====!")
     for rep in error_repos:
         print(rep)
+
+    return data_changes
