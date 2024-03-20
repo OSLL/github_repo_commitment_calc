@@ -22,14 +22,14 @@ def wikiparser(client, repositories, csv_name):
         try:
             repo_url = f"git@github.com:{name_rep}.wiki.git"
             repo = Repo.clone_from(repo_url, path)
-        except:
-            print("Ошибка: Несуществующий репозиторий")
+        except Exception as e:
+            print(e)
             error_repos.append(name_rep)
             continue
 
         #Вывод изменений
         EMPTY_TREE_SHA = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
-        wiki_commits = list(repo.iter_commits(all=True))
+        wiki_commits = repo.iter_commits(all=True)
         activity = {"A" : "Страница добавлена", "M" : "Страница изменена", "D" : "Страница удалена", "R":"Страница переименована"}
         data_changes = []
         for commit in wiki_commits:
