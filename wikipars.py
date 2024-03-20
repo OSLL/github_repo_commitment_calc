@@ -1,37 +1,38 @@
 from git import Repo, Commit, Tree, Diff
-import shutil
 import os
 import time
 
-def delete_everything_in_folder(folder_path):
-    shutil.rmtree(folder_path)
-    os.mkdir(folder_path)
-
 def wikiparser(client, repositories, path_drepo, csv_name):
-    path = path_drepo  #Путь к директории для репозитория
     #Создаем список репозиториев из файла
     with open(repositories, 'r') as file:
         list_repos = [x for x in file.read().split('\n') if x]
     error_repos = []
 
+    data_changes = []
     for name_rep in list_repos:
         print("=================", name_rep, "=================")
-        #Удаляем содержимое папки
-        delete_everything_in_folder(path)
-        #Клонируем репозиторий в папку
-        try:
+        #Проверяем, есть ли репозиторий в папке
+        dir_path = path_drepo + "/" + name_rep
+        if os.path.exists(dir_path):
+            #Обновляем репозиторий
+            repo = Repo(dir_path)
+            repo.remotes.origin.pull()
+        else:
+            #Клонируем репозиторий в папку
+            dir_path = path_drepo + "/" + name_rep
+            os.makedirs(dir_path, exist_ok=True)
             repo_url = f"git@github.com:{name_rep}.wiki.git"
-            repo = Repo.clone_from(repo_url, path)
-        except Exception as e:
-            print(e)
-            error_repos.append(name_rep)
-            continue
+            try:
+                repo = Repo.clone_from(repo_url, dir_path)
+            except Exception as e:
+                print(e)
+                error_repos.append(name_rep)
+                continue
 
         #Вывод изменений
         EMPTY_TREE_SHA = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
         wiki_commits = repo.iter_commits(all=True)
         activity = {"A" : "Страница добавлена", "M" : "Страница изменена", "D" : "Страница удалена", "R":"Страница переименована"}
-        data_changes = []
         for commit in wiki_commits:
             data_commit = dict()
             parent = commit.parents
@@ -52,8 +53,9 @@ def wikiparser(client, repositories, path_drepo, csv_name):
             data_changes.append(data_commit)
 
     #Вывод репозиториев, с которыми возникли ошибки
-    print("!=====Проблемные репозитории=====!")
-    for rep in error_repos:
-        print(rep)
+    if error_repos:
+        print("!=====Проблемные репозитории=====!")
+        for rep in error_repos:
+            print(rep)
 
     return data_changes
