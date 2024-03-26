@@ -19,6 +19,7 @@ def parse_args():
     parser.add_argument('-o', '--out', type=str, required=True, help='output filename')
     parser.add_argument('-s', '--start', type=str, required=False, help='start time', default='2000/01/01-00:00:00')
     parser.add_argument('-f', '--finish', type=str, required=False, help='finish time', default='2400/01/01-00:00:00')
+    parser.add_argument('-b', '--branch', type=str, required=False, help='branch to select commits, default "main", use "all" to get all commits from all branches', default='main')
     parser.add_argument('--google_token', type=str, required=False, help='Specify path to google token file')
     parser.add_argument('--table_id', type=str, required=False,
                         help='Specify Google sheet document id (can find in url)')
@@ -62,7 +63,7 @@ def main():
         if args.finish:
             finish = parse_time(args.finish.split('-'))
         if not args.p and not args.i and not args.invites and not args.w:
-            git_logger.log_commits(client, repositories, csv_name, start, finish)
+            git_logger.log_commits(client, repositories, csv_name, start, finish, args.branch)
             if (args.e):
                 export_sheets.write_data_to_table(csv_name, args.google_token, args.table_id, args.sheet_id)
         if args.p:
