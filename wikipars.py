@@ -1,8 +1,21 @@
 from git import Repo, Commit, Tree, Diff
 import os
 import time
+import csv
+
+WIKI_FIELDNAMES = ['login', 'datetime', 'page', 'action', 'revision id', 'diff']
+
+def log_wiki_to_csv(info, csv_name):
+    with open(csv_name, 'a', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=WIKI_FIELDNAMES)
+        writer.writerow(info)
 
 def wikiparser(client, repositories, path_drepo, csv_name):
+    with open(csv_name, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(WIKI_FIELDNAMES)
+
+
     #Создаем список репозиториев из файла
     with open(repositories, 'r') as file:
         list_repos = [x for x in file.read().split('\n') if x]
@@ -37,19 +50,20 @@ def wikiparser(client, repositories, path_drepo, csv_name):
             data_commit = dict()
             parent = commit.parents
             data_commit["login"] = commit.author
-            data_commit["datetime"] = time.asctime(time.localtime(commit.committed_date))
+            data_commit["datetime"] = time.strftime("%Y-%m-%d %H:%M:%S%z",time.gmtime(commit.committed_date))
             if parent:
-                data_commit["page"] = [diff.b_path for diff in parent[0].diff(commit)]
-                data_commit["action"] = [activity[diff.change_type] for diff in parent[0].diff(commit)]
+                data_commit["page"] = ';'.join([diff.b_path for diff in parent[0].diff(commit)])
+                data_commit["action"] =';'.join([activity[diff.change_type] for diff in parent[0].diff(commit)])
             else:
                 #Первый коммит
-                data_commit["page"] = [diff.b_path for diff in commit.diff(EMPTY_TREE_SHA)]
-                data_commit["action"] = [activity["A"]]
+                data_commit["page"] = ';'.join([diff.b_path for diff in commit.diff(EMPTY_TREE_SHA)])
+                data_commit["action"] = ';'.join([activity["A"]])
             data_commit["revision id"] = commit
             data_commit["diff"] = commit.diff()
             for i in data_commit:
                 print(i, data_commit[i], sep=': ')
             print("-------------------------------")
+            log_wiki_to_csv(data_commit, csv_name)
             data_changes.append(data_commit)
 
     #Вывод репозиториев, с которыми возникли ошибки
@@ -57,5 +71,6 @@ def wikiparser(client, repositories, path_drepo, csv_name):
         print("!=====Проблемные репозитории=====!")
         for rep in error_repos:
             print(rep)
+
 
     return data_changes
