@@ -3,7 +3,7 @@ import os
 import time
 import csv
 
-WIKI_FIELDNAMES = ['login', 'datetime', 'page', 'action', 'revision id', 'diff']
+WIKI_FIELDNAMES = ['repository name', 'author name', 'author login', 'datetime', 'page', 'action', 'revision id', 'diff']
 
 def log_wiki_to_csv(info, csv_name):
     with open(csv_name, 'a', newline='') as file:
@@ -49,7 +49,13 @@ def wikiparser(client, repositories, path_drepo, csv_name):
         for commit in wiki_commits:
             data_commit = dict()
             parent = commit.parents
-            data_commit["login"] = commit.author
+            data_commit["repository name"] = name_rep
+            data_commit["author name"] = commit.author
+            if commit.author.email:
+                try:
+                    data_commit["author login"] = commit.author.email.split('+')[1].split('@users')[0] 
+                except:
+                    pass
             data_commit["datetime"] = time.strftime("%Y-%m-%d %H:%M:%S%z",time.gmtime(commit.committed_date))
             if parent:
                 data_commit["page"] = ';'.join([diff.b_path for diff in parent[0].diff(commit)])
