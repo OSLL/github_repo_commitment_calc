@@ -58,8 +58,8 @@ def get_assignee_story(github_object):
 
 
 def log_commit_to_csv(info, csv_name):
-    fieldnames = ['repository name', 'commit id', 'author name', 'author login', 'author email', 'date and time',
-                  'changed files']
+    fieldnames = ['repository name', 'author name', 'author login', 'author email', 'date and time',
+                  'changed files', 'commit id', 'branch' ]
     with open(csv_name, 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writerow(info)
@@ -69,37 +69,51 @@ def log_commit_to_stdout(info):
     print(info)
 
 
-def log_repository_commits(repository: Repository, csv_name, start, finish):
-    for commit in repository.get_commits():
-        if commit.commit.author.date.astimezone(
-                pytz.timezone(timezone)) < start or commit.commit.author.date.astimezone(
-                pytz.timezone(timezone)) > finish:
-            continue
-        if commit.commit is not None:
-            info = {'repository name': repository.full_name,
-                    'author name': commit.commit.author.name,
-                    'author login': EMPTY_FIELD,
-                    'author email': EMPTY_FIELD,
-                    'date and time': commit.commit.author.date,
-                    'changed files': '; '.join([file.filename for file in commit.files]),
-                    'commit id': commit.commit.sha}
+def log_repository_commits(repository: Repository, csv_name, start, finish, branch):
 
-            if commit.author is not None:
-                info['author login'] = commit.author.login
 
-            if commit.commit.author is not None:
-                info['author email'] = commit.commit.author.email
+    branches = []
+    if branch == 'all':
+        for branch in repository.get_branches():
+            branches.append(branch.name)
+    else:
+        branches.append(branch)
+    
+    #print(branches)
 
-            log_commit_to_csv(info, csv_name)
-            log_commit_to_stdout(info)
-            sleep(timedelta)
+    for branch in branches:
+        print(f'Processing branch {branch}')
+        for commit in repository.get_commits():
+            if commit.commit.author.date.astimezone(
+                    pytz.timezone(timezone)) < start or commit.commit.author.date.astimezone(
+                    pytz.timezone(timezone)) > finish:
+                continue
+            if commit.commit is not None:
+                info = {'repository name': repository.full_name,
+                        'author name': commit.commit.author.name,
+                        'author login': EMPTY_FIELD,
+                        'author email': EMPTY_FIELD,
+                        'date and time': commit.commit.author.date,
+                        'changed files': '; '.join([file.filename for file in commit.files]),
+                        'commit id': commit.commit.sha,
+                        'branch': branch}
+
+                if commit.author is not None:
+                    info['author login'] = commit.author.login
+
+                if commit.commit.author is not None:
+                    info['author email'] = commit.commit.author.email
+
+                log_commit_to_csv(info, csv_name)
+                log_commit_to_stdout(info)
+                sleep(timedelta)
 
 
 def log_issue_to_csv(info, csv_name):
     fieldnames = ['repository name', 'number', 'title', 'state', 'task', 'created at', 'creator name', 'creator login',
                   'creator email', 'closer name', 'closer login', 'closer email', 'closed at', 'comment body',
                   'comment created at', 'comment author name', 'comment author login', 'comment author email',
-                  'assignee story', 'connected pull requests']
+                  'assignee story', 'connected pull requests', 'labels', 'milestone']
 
     with open(csv_name, 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
@@ -167,7 +181,7 @@ def get_connected_pulls(issue_number, repo_owner, repo_name, token):
         if (list_url == []):
             return 'Empty field'
         else:
-            return list_url
+            return ';'.join(list_url)
     return 'Empty field'
     
 
@@ -193,8 +207,11 @@ def log_repository_issues(repository: Repository, csv_name, token, start, finish
             'comment author login': EMPTY_FIELD,
             'comment author email': EMPTY_FIELD,
             'assignee story': EMPTY_FIELD,
-            'connected pull requests': EMPTY_FIELD
+            'connected pull requests': EMPTY_FIELD,
+            'labels': EMPTY_FIELD if issue.labels is None else ';'.join([label.name  for label in issue.labels]),
+            'milestone': EMPTY_FIELD if issue.milestone is None else issue.milestone.title
         }
+       
         if issue.number is not None:
             info_tmp['connected pull requests'] = get_connected_pulls(issue.number, repository.owner, repository.name,
                                                                       token)
@@ -231,7 +248,7 @@ def log_pr_to_csv(info, csv_name):
                   'creator login', 'creator email',
                   'changed files', 'comment body', 'comment created at', 'comment author name', 'comment author login',
                   'comment author email', 'merger name', 'merger login', 'merger email', 'source branch',
-                  'target branch', 'assignee story', 'related issues']
+                  'target branch', 'assignee story', 'related issues', 'labels', 'milestone']
     with open(csv_name, 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writerow(info)
@@ -284,7 +301,7 @@ def get_related_issues(pull_request_number, repo_owner, repo_name, token):
     for issue in issues_data:
         issue_node = issue["node"]
         list_issues_url.append(issue_node["url"])
-    return list_issues_url
+    return ';'.join(list_issues_url)
     
 
 def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
@@ -315,7 +332,9 @@ def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
             'source branch': pull.head.ref,
             'target branch': pull.base.ref,
             'assignee story': EMPTY_FIELD,
-            'related issues': EMPTY_FIELD
+            'related issues': EMPTY_FIELD,
+            'labels': EMPTY_FIELD if pull.labels is None else ';'.join([label.name  for label in pull.labels]),
+            'milestone': EMPTY_FIELD if pull.milestone is None else pull.milestone.title
         }
         if pull.issue_url is not None:
             info_tmp['related issues'] = get_related_issues(pull.number, repository.owner, repository.name, token)
@@ -369,9 +388,10 @@ def log_pull_requests(client: Github, repositories, csv_name, token, start, fini
                 'merger email',
                 'source branch',
                 'target branch',
-                'related issues'
                 'assignee story',
-                'related issues'
+                'related issues',
+                'labels',
+                'milestone'
             )
         )
 
@@ -407,9 +427,10 @@ def log_issues(client: Github, repositories, csv_name, token, start, finish):
                 'comment author name',
                 'comment author login',
                 'comment author email',
-                'connected pull requests'
                 'assignee story',
-                'connected pull requests'
+                'connected pull requests',
+                'labels',
+                'milestone'
             )
         )
 
@@ -444,25 +465,26 @@ def log_invitations(client: Github, repositories, csv_name):
                 except Exception as e:
                     print(e)
 
-def log_commits(client: Github, repositories, csv_name, start, finish):
+def log_commits(client: Github, repositories, csv_name, start, finish, branch):
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(
             (
                 'repository name',
-                'commit id',
                 'author name',
                 'author login',
                 'author email',
                 'date and time',
-                'changed files'
+                'changed files',
+                'commit id',
+                'branch'
             )
         )
 
     for repo in get_next_repo(client, repositories):
 
         try:
-            log_repository_commits(repo, csv_name, start, finish)
+            log_repository_commits(repo, csv_name, start, finish, branch)
             sleep(timedelta)
         except Exception as e:
             print(e)

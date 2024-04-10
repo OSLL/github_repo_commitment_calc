@@ -12,7 +12,7 @@ pip install -r requirements.txt
 ## Запуск приложения:
 1. Логирование commits
 ```commandline
-python3 main.py [-t, --token] token (github токен вместо token) [-l, --list]  list (list - строка пути к txt файлу со списком репозиториев) [-o, --out] out (out - название csv файла, в который будут помещены все логи)
+python3 main.py [-t, --token] token (github токен вместо token) [-l, --list]  list (list - строка пути к txt файлу со списком репозиториев) [-o, --out] out (out - название csv файла, в который будут помещены все логи) [-b, --branch] branch (branch - название конкретной ветки, откуда брать коммиты или all - логгировать все коммиты изо всех веток)
 ```
 2. Логирование issues
 ```commandline
