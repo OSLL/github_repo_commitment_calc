@@ -78,6 +78,8 @@ def main():
             git_logger.log_invitations(client, repositories, csv_name)
         if args.w:
             wikipars.wikiparser(client, repositories, path_drepo, csv_name)
+            if (args.e):
+                export_sheets.write_data_to_table(csv_name, args.google_token, args.table_id, args.sheet_id)
 
 
 if __name__ == '__main__':

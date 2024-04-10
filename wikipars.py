@@ -46,6 +46,7 @@ def wikiparser(client, repositories, path_drepo, csv_name):
         EMPTY_TREE_SHA = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
         wiki_commits = repo.iter_commits(all=True)
         activity = {"A" : "Страница добавлена", "M" : "Страница изменена", "D" : "Страница удалена", "R":"Страница переименована"}
+        eng_activity = {"A" : "Page added", "M" : "Page modified", "D" : "Page deleted", "R": "Page renamed"}
         for commit in wiki_commits:
             data_commit = dict()
             parent = commit.parents
@@ -53,17 +54,17 @@ def wikiparser(client, repositories, path_drepo, csv_name):
             data_commit["author name"] = commit.author
             if commit.author.email:
                 try:
-                    data_commit["author login"] = commit.author.email.split('+')[1].split('@users')[0] 
+                    data_commit["author login"] = commit.author.email.split('+')[1].split('@users')[0]
                 except:
                     pass
             data_commit["datetime"] = time.strftime("%Y-%m-%d %H:%M:%S%z",time.gmtime(commit.committed_date))
             if parent:
                 data_commit["page"] = ';'.join([diff.b_path for diff in parent[0].diff(commit)])
-                data_commit["action"] =';'.join([activity[diff.change_type] for diff in parent[0].diff(commit)])
+                data_commit["action"] = ';'.join([eng_activity[diff.change_type] for diff in parent[0].diff(commit)])
             else:
                 #Первый коммит
                 data_commit["page"] = ';'.join([diff.b_path for diff in commit.diff(EMPTY_TREE_SHA)])
-                data_commit["action"] = ';'.join([activity["A"]])
+                data_commit["action"] = ';'.join([eng_activity["A"]])
             data_commit["revision id"] = commit
             data_commit["diff"] = commit.diff()
             for i in data_commit:
