@@ -488,3 +488,59 @@ def log_commits(client: Github, repositories, csv_name, start, finish, branch):
             sleep(timedelta)
         except Exception as e:
             print(e)
+            
+def log_contributors_to_csv(info, csv_name):
+    fieldnames = ['repository name', 'login', 'name', 'email', 'url', 'permissions', 'id', 'node_id', 'type', 'bio',
+                  'site_admin']
+    with open(csv_name, 'a', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writerow(info)
+
+
+def log_repository_contributors(repository: Repository, csv_name):
+    contributors = repository.get_contributors()
+    for contributor in contributors:
+        contributor_permissons = repository.get_collaborator_permission(contributor)
+        info_tmp = {
+            'repository name': repository.full_name,
+            'login': contributor.login,
+            'name': EMPTY_FIELD if contributor.name is None else contributor.name,
+            'email': EMPTY_FIELD if contributor.email is None else contributor.email,
+            'url': contributor.html_url,
+            'permissions': EMPTY_FIELD if contributor_permissons is None else contributor_permissons,
+            'id': contributor.id,
+            'node_id': contributor.node_id,
+            'type': contributor.type,
+            'bio': EMPTY_FIELD if contributor.bio is None else contributor.bio,
+            'site_admin': contributor.site_admin
+        }
+        log_contributors_to_csv(info_tmp, csv_name)
+        print(info_tmp)
+        sleep(timedelta)
+
+
+def log_contributors(client: Github, repositories, csv_name):
+    with open(csv_name, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(
+            (
+                'repository name',
+                'login',
+                'name',
+                'email',
+                'url',
+                'permissions',
+                'id',
+                'node_id',
+                'type',
+                'bio',
+                'site_admin'
+            )
+        )
+    for repo in get_next_repo(client, repositories):
+
+        try:
+            log_repository_contributors(repo, csv_name)
+            sleep(timedelta)
+        except Exception as e:
+            print(e)
