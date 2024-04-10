@@ -4,15 +4,18 @@ import pytz
 
 import git_logger
 import export_sheets
+import wikipars
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--invites", help="print pending invites", action="store_true")
     parser.add_argument("-p", help="log pull requests", action="store_true")
     parser.add_argument("-i", help="log issues", action="store_true")
+    parser.add_argument("-w", help="log wikis", action="store_true")
     parser.add_argument("-e", help="export table to google sheets", action="store_true")
     parser.add_argument('-t', '--token', type=str, required=True, help='token github account')
     parser.add_argument('-l', '--list', type=str, required=True, help='repos names file')
+    parser.add_argument("--download_repos", type=str, help="path to downloaded repositories", default='./')
     parser.add_argument('-o', '--out', type=str, required=True, help='output filename')
     parser.add_argument('-s', '--start', type=str, required=False, help='start time', default='2000/01/01-00:00:00')
     parser.add_argument('-f', '--finish', type=str, required=False, help='finish time', default='2400/01/01-00:00:00')
@@ -43,12 +46,12 @@ def parse_time(datetime_str):
                               second=start[5])
     return start_datetime.astimezone(pytz.timezone(git_logger.timezone))
 
-
 def main():
     args = parse_args()
     token = args.token
     repositories = args.list
     csv_name = args.out
+    path_drepo = args.download_repos
 
     try:
         client = git_logger.login(token=token)
@@ -59,7 +62,7 @@ def main():
             start = parse_time(args.start.split('-'))
         if args.finish:
             finish = parse_time(args.finish.split('-'))
-        if not args.p and not args.i and not args.invites:
+        if not args.p and not args.i and not args.invites and not args.w:
             git_logger.log_commits(client, repositories, csv_name, start, finish, args.branch)
             if (args.e):
                 export_sheets.write_data_to_table(csv_name, args.google_token, args.table_id, args.sheet_id)
@@ -73,6 +76,10 @@ def main():
                 export_sheets.write_data_to_table(csv_name, args.google_token, args.table_id, args.sheet_id)
         if args.invites:
             git_logger.log_invitations(client, repositories, csv_name)
+        if args.w:
+            wikipars.wikiparser(client, repositories, path_drepo, csv_name)
+            if (args.e):
+                export_sheets.write_data_to_table(csv_name, args.google_token, args.table_id, args.sheet_id)
 
 
 if __name__ == '__main__':
