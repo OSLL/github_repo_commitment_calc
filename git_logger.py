@@ -73,11 +73,14 @@ def log_repository_commits(repository: Repository, csv_name, start, finish, bran
 
 
     branches = []
-    if branch == 'all':
-        for branch in repository.get_branches():
-            branches.append(branch.name)
-    else:
-        branches.append(branch)
+    match branch:
+        case 'all':
+            for branch in repository.get_branches():
+                branches.append(branch.name)
+        case None:
+            branches.append(repository.default_branch)
+        case _:
+            branches.append(branch)
     
     #print(branches)
 
