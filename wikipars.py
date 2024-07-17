@@ -3,7 +3,7 @@ import os
 import time
 import csv
 
-WIKI_FIELDNAMES = ['repository name', 'author name', 'author login', 'datetime', 'page', 'action', 'revision id', 'diff']
+WIKI_FIELDNAMES = ['repository name', 'author name', 'author login', 'datetime', 'page', 'action', 'revision id', 'added lines', 'deleted lines']
 
 def log_wiki_to_csv(info, csv_name):
     with open(csv_name, 'a', newline='') as file:
@@ -46,7 +46,7 @@ def wikiparser(client, repositories, path_drepo, csv_name):
         EMPTY_TREE_SHA = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
         wiki_commits = repo.iter_commits(all=True)
         activity = {"A" : "Страница добавлена", "M" : "Страница изменена", "D" : "Страница удалена", "R":"Страница переименована"}
-        eng_activity = {"A" : "Page added", "M" : "Page modified", "D" : "Page deleted", "R": "Page renamed"}
+        #eng_activity = {"A" : "Page added", "M" : "Page modified", "D" : "Page deleted", "R": "Page renamed"}
         for commit in wiki_commits:
             data_commit = dict()
             parent = commit.parents
@@ -55,20 +55,22 @@ def wikiparser(client, repositories, path_drepo, csv_name):
             if commit.author.email:
                 try:
                     data_commit["author login"] = commit.author.email.split('+')[1].split('@users')[0]
-                except:
-                    pass
-            data_commit["datetime"] = time.strftime("%Y-%m-%d %H:%M:%S%z",time.gmtime(commit.committed_date))
+                except Exception as e:
+                    data_commit["author login"] = "-"
+            data_commit["datetime"] = time.strftime("%Y-%m-%d %H:%M:%S%z", time.gmtime(commit.committed_date))
             if parent:
                 data_commit["page"] = ';'.join([diff.b_path for diff in parent[0].diff(commit)])
-                data_commit["action"] = ';'.join([eng_activity[diff.change_type] for diff in parent[0].diff(commit)])
+                data_commit["action"] = ';'.join([activity[diff.change_type] for diff in parent[0].diff(commit)])
             else:
                 #Первый коммит
                 data_commit["page"] = ';'.join([diff.b_path for diff in commit.diff(EMPTY_TREE_SHA)])
-                data_commit["action"] = ';'.join([eng_activity["A"]])
+                data_commit["action"] = ';'.join([activity["A"]])
             data_commit["revision id"] = commit
-            data_commit["diff"] = commit.diff()
-            for i in data_commit:
-                print(i, data_commit[i], sep=': ')
+            data_commit["added lines"] = commit.stats.total["insertions"]
+            data_commit["deleted lines"] = commit.stats.total["deletions"]
+            for fieldname in data_commit:
+                print(fieldname, data_commit[fieldname], sep=': ')
+            print(commit.stats.total)
             print("-------------------------------")
             log_wiki_to_csv(data_commit, csv_name)
             data_changes.append(data_commit)
