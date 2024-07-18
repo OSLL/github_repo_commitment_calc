@@ -12,21 +12,24 @@ pip install -r requirements.txt
 ## Запуск приложения:
 1. Логирование commits
 ```commandline
-python3 main.py [-t, --token] token (github токен вместо token) [-l, --list]  list (list - строка пути к txt файлу со списком репозиториев) [-o, --out] out (out - название csv файла, в который будут помещены все логи) [-b, --branch] branch (branch - название конкретной ветки, откуда брать коммиты или all - логгировать все коммиты изо всех веток)
+python3 main.py [-c, --commits] [-t, --token] token (github токен вместо token) [-l, --list]  list (list - строка пути к txt файлу со списком репозиториев) [-o, --out] out (out - название csv файла, в который будут помещены все логи) [-b, --branch] branch (branch - название конкретной ветки, откуда брать коммиты или all - логгировать все коммиты изо всех веток)
 ```
 2. Логирование issues
 ```commandline
-python3 main.py -i [-t, --token] token (github токен вместо token) [-l, --list]  list (list - строка пути к txt файлу со списком репозиториев) [-o, --out] out (out - название csv файла, в который будут помещены все логи)
+python3 main.py [-i, --issues] [-t, --token] token (github токен вместо token) [-l, --list]  list (list - строка пути к txt файлу со списком репозиториев) [-o, --out] out (out - название csv файла, в который будут помещены все логи)
 ```
 3. Логирование pull requests
 ```commandline
-python3 main.py -p [-t, --token] token (github токен вместо token) [-l, --list]  list (list - строка пути к txt файлу со списком репозиториев) [-o, --out] out (out - название csv файла, в который будут помещены все логи)
+python3 main.py [-p, --pull_requests] [-t, --token] token (github токен вместо token) [-l, --list]  list (list - строка пути к txt файлу со списком репозиториев) [-o, --out] out (out - название csv файла, в который будут помещены все логи)
 ```
 4. Логирование непринятых приглашений в репо
 ```commandline
 python3 main.py --invites [-t, --token] token (github токен вместо token) [-l, --list]  list (list - строка пути к txt файлу со списком репозиториев) [-o, --out] out (out - название csv файла, в который будут помещены все логи)
 ```
-
+5. Логирование вики-репозиториев
+```commandline
+python3 main.py [-w, --wikis] [-t, --token] token (github токен вместо token) [-l, --list]  list (list - строка пути к txt файлу со списком репозиториев)  --dowland_repos path_drepo (path_drepo - строка пути к директории, где сохраняются вики-репозитории) [-o, --out] out (out - название csv файла, в который будут помещены все логи)
+```
 
 
 ##  Получение токена для работы с Google таблицей:
@@ -44,7 +47,7 @@ python3 main.py --invites [-t, --token] token (github токен вместо to
 ## Экспорт таблицы в Google Sheets:
 
 ``` commandline
-python3 main.py -p [-t, --token] token (github токен вместо token) [-l,--list] list (list - строка пути к txt файлу со списком репозиториев) [-o, --out] out (out - название csv файла, в который будут помещены все логи) [--google_token] token.json (файл с google токеном) [--table_id] table_id (id таблицы, указанной в url пути до таблицы) [--sheet_id] sheet_id (id конкретного листа в таблице google)
+python3 main.py [-p, --pull_requests] [-t, --token] token (github токен вместо token) [-l,--list] list (list - строка пути к txt файлу со списком репозиториев) [-o, --out] out (out - название csv файла, в который будут помещены все логи) [--google_token] token.json (файл с google токеном) [--table_id] table_id (id таблицы, указанной в url пути до таблицы) [--sheet_id] sheet_id (id конкретного листа в таблице google)
 ```
 
 ## Файл со списком репозиториев:
