@@ -9,6 +9,7 @@ import wikipars
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--invites", help="print pending invites", action="store_true")
+    parser.add_argument("-c", help="log commits", action="store_true")
     parser.add_argument("-p", help="log pull requests", action="store_true")
     parser.add_argument("-i", help="log issues", action="store_true")
     parser.add_argument("-w", help="log wikis", action="store_true")
@@ -63,24 +64,18 @@ def main():
             start = parse_time(args.start.split('-'))
         if args.finish:
             finish = parse_time(args.finish.split('-'))
-        if not args.p and not args.i and not args.invites and not args.w:
+        if args.c:
             git_logger.log_commits(client, repositories, csv_name, start, finish, args.branch)
-            if (args.e):
-                export_sheets.write_data_to_table(csv_name, args.google_token, args.table_id, args.sheet_id)
         if args.p:
             git_logger.log_pull_requests(client, repositories, csv_name, token, start, finish)
-            if (args.e):
-                export_sheets.write_data_to_table(csv_name, args.google_token, args.table_id, args.sheet_id)
         if args.i:
             git_logger.log_issues(client, repositories, csv_name, token, start, finish)
-            if (args.e):
-                export_sheets.write_data_to_table(csv_name, args.google_token, args.table_id, args.sheet_id)
         if args.invites:
             git_logger.log_invitations(client, repositories, csv_name)
         if args.w:
             wikipars.wikiparser(client, repositories, path_drepo, csv_name)
-            if args.e:
-                export_sheets.write_data_to_table(csv_name, args.google_token, args.table_id, args.sheet_id)
+        if args.e:
+            export_sheets.write_data_to_table(csv_name, args.google_token, args.table_id, args.sheet_id)
 
 
 if __name__ == '__main__':
