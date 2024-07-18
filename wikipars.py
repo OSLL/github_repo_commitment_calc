@@ -1,4 +1,4 @@
-from git import Repo, Commit, Tree, Diff
+from git import Repo, exc
 import os
 import time
 import csv
@@ -41,7 +41,7 @@ def wikiparser(client, repositories, path_drepo, csv_name):
             repo_url = f"git@github.com:{name_rep}.wiki.git"
             try:
                 repo = Repo.clone_from(repo_url, dir_path)
-            except git.exc.GitCommandError:
+            except exc.GitCommandError:
                 os.rmdir(dir_path)
                 error_repos.append(name_rep)
                 continue
