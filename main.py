@@ -5,6 +5,7 @@ import pytz
 import git_logger
 import export_sheets
 import compars
+import prpars
 import wikipars
 
 def parse_args():
@@ -71,7 +72,7 @@ def main():
         if args.commits:
             compars.log_commits(client, working_repos, csv_name, start, finish, args.branch, fork_flag)
         if args.pull_requests:
-            git_logger.log_pull_requests(client, repositories, csv_name, token, start, finish)
+            prpars.log_pull_requests(client, working_repos, csv_name, token, start, finish, fork_flag)
         if args.issues:
             git_logger.log_issues(client, repositories, csv_name, token, start, finish)
         if args.invites:
