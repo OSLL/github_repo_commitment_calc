@@ -20,7 +20,7 @@ def write_data_to_table(csv_path, google_token, table_id, sheet_id):
     wk_content = sh.worksheet_by_title(sheet_id)
 
     if csv_path:
-        df = pd.read_csv(csv_path, delimiter=',', encoding='cp1251')
+        df = pd.read_csv(csv_path, delimiter=',', encoding='utf-8')
     else:
         df = pd.DataFrame(INT_MASS)
 

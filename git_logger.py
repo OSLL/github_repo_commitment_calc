@@ -86,7 +86,8 @@ def log_repository_commits(repository: Repository, csv_name, start, finish, bran
 
     for branch in branches:
         print(f'Processing branch {branch}')
-        for commit in repository.get_commits():
+        # TODO add support of since and until in https://pygithub.readthedocs.io/en/stable/github_objects/Repository.html#github.Repository.Repository.get_commits
+        for commit in repository.get_commits(sha=branch):
             if commit.commit.author.date.astimezone(
                     pytz.timezone(timezone)) < start or commit.commit.author.date.astimezone(
                     pytz.timezone(timezone)) > finish:
