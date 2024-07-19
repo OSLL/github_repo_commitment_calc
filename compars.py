@@ -62,6 +62,7 @@ def log_commits(client: Github, working_repos, csv_name, start, finish, branch, 
                 for forked_repo in repo.get_forks():
                     print('=' * 20, "FORKED:", forked_repo.full_name, '=' * 20)
                     log_repository_commits(forked_repo, csv_name, start, finish, branch)
+                    sleep(timedelta)
             sleep(timedelta)
         except Exception as e:
             print(e)

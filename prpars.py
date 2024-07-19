@@ -155,6 +155,7 @@ def log_pull_requests(client: Github, working_repos, csv_name, token, start, fin
                 for forked_repo in repo.get_forks():
                     print('=' * 20, "FORKED:", forked_repo.full_name, '=' * 20)
                     log_repositories_pr(forked_repo, csv_name, token, start, finish)
+                    sleep(timedelta)
             sleep(timedelta)
         except Exception as e:
             print(e)

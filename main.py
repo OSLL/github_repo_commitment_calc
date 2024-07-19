@@ -6,6 +6,8 @@ import git_logger
 import export_sheets
 import compars
 import prpars
+import issuepars
+import invpars
 import wikipars
 
 def parse_args():
@@ -74,9 +76,9 @@ def main():
         if args.pull_requests:
             prpars.log_pull_requests(client, working_repos, csv_name, token, start, finish, fork_flag)
         if args.issues:
-            git_logger.log_issues(client, repositories, csv_name, token, start, finish)
+            issuepars.log_issues(client, working_repos, csv_name, token, start, finish, fork_flag)
         if args.invites:
-            git_logger.log_invitations(client, repositories, csv_name)
+            invpars.log_invitations(client, working_repos, csv_name)
         if args.wikis:
             wikipars.wikiparser(client, repositories, path_drepo, csv_name)
         if args.export_google_sheets:
