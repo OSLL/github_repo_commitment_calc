@@ -469,7 +469,7 @@ def log_invitations(client: Github, repositories, csv_name):
                 except Exception as e:
                     print(e)
 
-def log_commits(client: Github, repositories, csv_name, start, finish, branch):
+def log_commits(client: Github, repositories, csv_name, start, finish, branch, fork_flag):
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(
@@ -489,6 +489,10 @@ def log_commits(client: Github, repositories, csv_name, start, finish, branch):
 
         try:
             log_repository_commits(repo, csv_name, start, finish, branch)
+            if fork_flag:
+                for forked_repo in repo.get_forks():
+                    print('=' * 20, forked_repo.full_name, '=' * 20)
+                    log_repository_commits(forked_repo, csv_name, start, finish, branch)
             sleep(timedelta)
         except Exception as e:
             print(e)

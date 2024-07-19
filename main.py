@@ -13,6 +13,7 @@ def parse_args():
     parser.add_argument("-p", "--pull_requests", help="log pull requests", action="store_true")
     parser.add_argument("-i", "--issues", help="log issues", action="store_true")
     parser.add_argument("-w", "--wikis", help="log wikis", action="store_true")
+    parser.add_argument("--forks_include", help="logging data from forks", action="store_true")
     parser.add_argument("-e", "--export_google_sheets", help="export table to google sheets", action="store_true")
     parser.add_argument('-t', '--token', type=str, required=True, help='token github account')
     parser.add_argument('-l', '--list', type=str, required=True, help='repos names file')
@@ -54,6 +55,7 @@ def main():
     repositories = args.list
     csv_name = args.out
     path_drepo = args.download_repos
+    fork_flag = args.forks_include
 
     try:
         client = git_logger.login(token=token)
@@ -65,7 +67,7 @@ def main():
         if args.finish:
             finish = parse_time(args.finish.split('-'))
         if args.commits:
-            git_logger.log_commits(client, repositories, csv_name, start, finish, args.branch)
+            git_logger.log_commits(client, repositories, csv_name, start, finish, args.branch, fork_flag)
         if args.pull_requests:
             git_logger.log_pull_requests(client, repositories, csv_name, token, start, finish)
         if args.issues:
