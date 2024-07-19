@@ -4,6 +4,7 @@ import pytz
 
 import git_logger
 import export_sheets
+import compars
 import wikipars
 
 def parse_args():
@@ -62,12 +63,13 @@ def main():
     except Exception as e:
         print(e)
     else:
+        working_repos = git_logger.get_next_repo(client, repositories)
         if args.start:
             start = parse_time(args.start.split('-'))
         if args.finish:
             finish = parse_time(args.finish.split('-'))
         if args.commits:
-            git_logger.log_commits(client, repositories, csv_name, start, finish, args.branch, fork_flag)
+            compars.log_commits(client, working_repos, csv_name, start, finish, args.branch, fork_flag)
         if args.pull_requests:
             git_logger.log_pull_requests(client, repositories, csv_name, token, start, finish)
         if args.issues:
