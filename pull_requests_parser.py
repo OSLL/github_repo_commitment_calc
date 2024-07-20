@@ -6,9 +6,9 @@ from time import sleep
 from github import Github, Repository, GithubException, PullRequest
 
 EMPTY_FIELD = 'Empty field'
-timedelta = 0.05
-timezone = 'Europe/Moscow'
-fieldnames = ('repository name', 'title', 'id', 'state', 'commit into', 'commit from', 'created at', 'creator name',
+TIMEDELTA = 0.05
+TIMEZONE = 'Europe/Moscow'
+FIELDNAMES = ('repository name', 'title', 'id', 'state', 'commit into', 'commit from', 'created at', 'creator name',
               'creator login', 'creator email', 'changed files', 'comment body',
               'comment created at', 'comment author name', 'comment author login',
               'comment author email', 'merger name', 'merger login', 'merger email', 'source branch',
@@ -16,10 +16,13 @@ fieldnames = ('repository name', 'title', 'id', 'state', 'commit into', 'commit 
 
 def log_pr_to_stdout(info):
     print(info)
+
+
 def log_pr_to_csv(info, csv_name):
     with open(csv_name, 'a', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer = csv.DictWriter(file, fieldnames=FIELDNAMES)
         writer.writerow(info)
+
 
 def get_related_issues(pull_request_number, repo_owner, repo_name, token):
     access_token = token
@@ -66,6 +69,7 @@ def get_related_issues(pull_request_number, repo_owner, repo_name, token):
         list_issues_url.append(issue_node["url"])
     return ';'.join(list_issues_url)
 
+
 def get_assignee_story(github_object):
     assignee_result = ""
     events = github_object.get_issue_events() if type(
@@ -81,14 +85,17 @@ def get_assignee_story(github_object):
                 assigner = github_object.user.login
                 assignee = event.assignee.login
                 assignee_result += f"{date}: {assigner} -/> {assignee}; "
-        sleep(timedelta)
+        sleep(TIMEDELTA)
     return assignee_result
+
 
 def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
     for pull in repository.get_pulls(state='all'):
-        if pull.created_at.astimezone(pytz.timezone(timezone)) < start or pull.created_at.astimezone(
-                pytz.timezone(timezone)) > finish:
+        if pull.created_at.astimezone(pytz.timezone(TIMEZONE)) < start or pull.created_at.astimezone(
+                pytz.timezone(TIMEZONE)) > finish:
             continue
+        nvl = lambda val: val or EMPTY_FIELD
+        get_info = lambda obj, attr: EMPTY_FIELD if obj is None else getattr(obj, attr)
         info_tmp = {
             'repository name': repository.full_name,
             'title': pull.title,
@@ -97,7 +104,7 @@ def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
             'commit into': pull.base.label,
             'commit from': pull.head.label,
             'created at': pull.created_at,
-            'creator name': EMPTY_FIELD if pull.user.name is None else pull.user.name,
+            'creator name': nvl(pull.user.name),
             'creator login': pull.user.login,
             'creator email': pull.user.email,
             'changed files': '; '.join([file.filename for file in pull.get_files()]),
@@ -106,26 +113,16 @@ def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
             'comment author name': EMPTY_FIELD,
             'comment author login': EMPTY_FIELD,
             'comment author email': EMPTY_FIELD,
-            'merger name': EMPTY_FIELD,
-            'merger login': EMPTY_FIELD,
-            'merger email': EMPTY_FIELD,
+            'merger name': get_info(pull.merged_by, 'name'),
+            'merger login': get_info(pull.merged_by, 'login'),
+            'merger email': get_info(pull.merged_by, 'email'),
             'source branch': pull.head.ref,
             'target branch': pull.base.ref,
-            'assignee story': EMPTY_FIELD,
-            'related issues': EMPTY_FIELD,
+            'assignee story': get_assignee_story(pull),
+            'related issues': EMPTY_FIELD if pull.issue_url is None else get_related_issues(pull.number, repository.owner, repository.name, token),
             'labels': EMPTY_FIELD if pull.labels is None else ';'.join([label.name for label in pull.labels]),
-            'milestone': EMPTY_FIELD if pull.milestone is None else pull.milestone.title
+            'milestone': get_info(pull.milestone, 'title')
         }
-        if pull.issue_url is not None:
-            info_tmp['related issues'] = get_related_issues(pull.number, repository.owner, repository.name,
-                                                            token)
-
-        if pull.merged_by is not None:
-            info_tmp['merger name'] = pull.merged_by.name
-            info_tmp['merger login'] = pull.merged_by.login
-            info_tmp['merger email'] = pull.merged_by.email
-
-        info_tmp['assignee story'] = get_assignee_story(pull)
 
         if pull.get_comments().totalCount > 0:
             for comment in pull.get_comments():
@@ -140,12 +137,13 @@ def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
         else:
             log_pr_to_csv(info_tmp, csv_name)
             log_pr_to_stdout(info_tmp)
-        sleep(timedelta)
+        sleep(TIMEDELTA)
+
 
 def log_pull_requests(client: Github, working_repos, csv_name, token, start, finish, fork_flag):
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(fieldnames)
+        writer.writerow(FIELDNAMES)
 
     for repo in working_repos:
         try:
@@ -155,7 +153,7 @@ def log_pull_requests(client: Github, working_repos, csv_name, token, start, fin
                 for forked_repo in repo.get_forks():
                     print('=' * 20, "FORKED:", forked_repo.full_name, '=' * 20)
                     log_repositories_pr(forked_repo, csv_name, token, start, finish)
-                    sleep(timedelta)
-            sleep(timedelta)
+                    sleep(TIMEDELTA)
+            sleep(TIMEDELTA)
         except Exception as e:
             print(e)

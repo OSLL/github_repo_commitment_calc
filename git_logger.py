@@ -1,7 +1,6 @@
 from github import Github, GithubException
 
-timezone = 'Europe/Moscow'
-
+TIMEZONE = 'Europe/Moscow'
 
 def login(token):
     client = Github(login_or_token=token)

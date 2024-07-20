@@ -4,10 +4,10 @@ import pytz
 
 import git_logger
 import export_sheets
-import compars
-import prpars
-import issuepars
-import invpars
+import commits_parser
+import pull_requests_parser
+import issues_parser
+import invites_parser
 import wikipars
 
 def parse_args():
@@ -50,7 +50,7 @@ def parse_time(datetime_str):
     start = [int(i) for i in start]
     start_datetime = datetime(year=start[0], month=start[1], day=start[2], hour=start[3], minute=start[4],
                               second=start[5])
-    return start_datetime.astimezone(pytz.timezone(git_logger.timezone))
+    return start_datetime.astimezone(pytz.timezone(git_logger.TIMEZONE))
 
 
 def main():
@@ -72,13 +72,13 @@ def main():
         if args.finish:
             finish = parse_time(args.finish.split('-'))
         if args.commits:
-            compars.log_commits(client, working_repos, csv_name, start, finish, args.branch, fork_flag)
+            commits_parser.log_commits(client, working_repos, csv_name, start, finish, args.branch, fork_flag)
         if args.pull_requests:
-            prpars.log_pull_requests(client, working_repos, csv_name, token, start, finish, fork_flag)
+            pull_requests_parser.log_pull_requests(client, working_repos, csv_name, token, start, finish, fork_flag)
         if args.issues:
-            issuepars.log_issues(client, working_repos, csv_name, token, start, finish, fork_flag)
+            issues_parser.log_issues(client, working_repos, csv_name, token, start, finish, fork_flag)
         if args.invites:
-            invpars.log_invitations(client, working_repos, csv_name)
+            invites_parser.log_invitations(client, working_repos, csv_name)
         if args.wikis:
             wikipars.wikiparser(client, repositories, path_drepo, csv_name)
         if args.export_google_sheets:
