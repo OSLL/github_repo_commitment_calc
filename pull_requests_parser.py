@@ -3,6 +3,7 @@ import pytz
 import requests
 import json
 from time import sleep
+from git_logger import get_assignee_story
 from github import Github, Repository, GithubException, PullRequest
 
 EMPTY_FIELD = 'Empty field'
@@ -70,25 +71,6 @@ def get_related_issues(pull_request_number, repo_owner, repo_name, token):
     return ';'.join(list_issues_url)
 
 
-def get_assignee_story(github_object):
-    assignee_result = ""
-    events = github_object.get_issue_events() if type(
-        github_object) is PullRequest.PullRequest else github_object.get_events()
-    for event in events:
-        if event.event == "assigned" or event.event == "unassigned":
-            date = event.created_at
-            if event.event == "assigned":
-                assigner = github_object.user.login
-                assignee = event.assignee.login
-                assignee_result += f"{date}: {assigner} -> {assignee}; "
-            else:
-                assigner = github_object.user.login
-                assignee = event.assignee.login
-                assignee_result += f"{date}: {assigner} -/> {assignee}; "
-        sleep(TIMEDELTA)
-    return assignee_result
-
-
 def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
     for pull in repository.get_pulls(state='all'):
         if pull.created_at.astimezone(pytz.timezone(TIMEZONE)) < start or pull.created_at.astimezone(
@@ -131,7 +113,7 @@ def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
                 info['comment created at'] = comment.created_at
                 info['comment author name'] = comment.user.name
                 info['comment author login'] = comment.user.login
-                info['comment author email'] = EMPTY_FIELD if comment.user.email is None else comment.user.email
+                info['comment author email'] = nvl(comment.user.email)
                 log_pr_to_csv(info, csv_name)
                 log_pr_to_stdout(info)
         else:

@@ -3,6 +3,7 @@ import pytz
 import requests
 import json
 from time import sleep
+from git_logger import get_assignee_story
 from github import Github, Repository, GithubException, PullRequest
 
 EMPTY_FIELD = 'Empty field'
@@ -83,25 +84,6 @@ def get_connected_pulls(issue_number, repo_owner, repo_name, token):
         else:
             return ';'.join(list_url)
     return 'Empty field'
-
-
-def get_assignee_story(github_object):
-    assignee_result = ""
-    events = github_object.get_issue_events() if type(
-        github_object) is PullRequest.PullRequest else github_object.get_events()
-    for event in events:
-        if event.event == "assigned" or event.event == "unassigned":
-            date = event.created_at
-            if event.event == "assigned":
-                assigner = github_object.user.login
-                assignee = event.assignee.login
-                assignee_result += f"{date}: {assigner} -> {assignee}; "
-            else:
-                assigner = github_object.user.login
-                assignee = event.assignee.login
-                assignee_result += f"{date}: {assigner} -/> {assignee}; "
-        sleep(TIMEDELTA)
-    return assignee_result
 
 
 def log_repository_issues(repository: Repository, csv_name, token, start, finish):
