@@ -91,6 +91,7 @@ def log_repository_issues(repository: Repository, csv_name, token, start, finish
         if issue.created_at.astimezone(pytz.timezone(TIMEZONE)) < start or issue.created_at.astimezone(
                 pytz.timezone(TIMEZONE)) > finish:
             continue
+        nvl = lambda val: val or EMPTY_FIELD
         get_info = lambda obj, attr: EMPTY_FIELD if obj is None else getattr(obj, attr)
         info_tmp = {
             'repository name': repository.full_name, 'number': issue.number, 'title': issue.title,
@@ -99,7 +100,7 @@ def log_repository_issues(repository: Repository, csv_name, token, start, finish
             'creator name': get_info(issue.user, 'name'),
             'creator login': get_info(issue.user, 'login'),
             'creator email': get_info(issue.user, 'email'),
-            'closed at': EMPTY_FIELD if issue.closed_by is None else issue.closed_at,
+            'closed at': nvl(issue.closed_at),
             'closer name': get_info(issue.closed_by, 'name'),
             'closer login': get_info(issue.closed_by, 'login'),
             'closer email': get_info(issue.closed_by, 'email'),
