@@ -4,6 +4,10 @@ import pytz
 
 import git_logger
 import export_sheets
+import commits_parser
+import pull_requests_parser
+import issues_parser
+import invites_parser
 import wikipars
 
 def parse_args():
@@ -13,6 +17,7 @@ def parse_args():
     parser.add_argument("-p", "--pull_requests", help="log pull requests", action="store_true")
     parser.add_argument("-i", "--issues", help="log issues", action="store_true")
     parser.add_argument("-w", "--wikis", help="log wikis", action="store_true")
+    parser.add_argument("--forks_include", help="logging data from forks", action="store_true")
     parser.add_argument("-e", "--export_google_sheets", help="export table to google sheets", action="store_true")
     parser.add_argument('-t', '--token', type=str, required=True, help='token github account')
     parser.add_argument('-l', '--list', type=str, required=True, help='repos names file')
@@ -45,7 +50,7 @@ def parse_time(datetime_str):
     start = [int(i) for i in start]
     start_datetime = datetime(year=start[0], month=start[1], day=start[2], hour=start[3], minute=start[4],
                               second=start[5])
-    return start_datetime.astimezone(pytz.timezone(git_logger.timezone))
+    return start_datetime.astimezone(pytz.timezone(git_logger.TIMEZONE))
 
 
 def main():
@@ -54,24 +59,26 @@ def main():
     repositories = args.list
     csv_name = args.out
     path_drepo = args.download_repos
+    fork_flag = args.forks_include
 
     try:
         client = git_logger.login(token=token)
     except Exception as e:
         print(e)
     else:
+        working_repos = git_logger.get_next_repo(client, repositories)
         if args.start:
             start = parse_time(args.start.split('-'))
         if args.finish:
             finish = parse_time(args.finish.split('-'))
         if args.commits:
-            git_logger.log_commits(client, repositories, csv_name, start, finish, args.branch)
+            commits_parser.log_commits(client, working_repos, csv_name, start, finish, args.branch, fork_flag)
         if args.pull_requests:
-            git_logger.log_pull_requests(client, repositories, csv_name, token, start, finish)
+            pull_requests_parser.log_pull_requests(client, working_repos, csv_name, token, start, finish, fork_flag)
         if args.issues:
-            git_logger.log_issues(client, repositories, csv_name, token, start, finish)
+            issues_parser.log_issues(client, working_repos, csv_name, token, start, finish, fork_flag)
         if args.invites:
-            git_logger.log_invitations(client, repositories, csv_name)
+            invites_parser.log_invitations(client, working_repos, csv_name)
         if args.wikis:
             wikipars.wikiparser(client, repositories, path_drepo, csv_name)
         if args.export_google_sheets:

@@ -29,5 +29,3 @@ def write_data_to_table(csv_path, google_token, table_id, sheet_id):
 
     # Запись новых данных
     wk_content.set_dataframe(df, 'A1', copy_head=True)
-
-

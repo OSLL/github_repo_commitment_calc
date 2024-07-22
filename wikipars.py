@@ -10,11 +10,11 @@ def log_wiki_to_csv(info, csv_name):
         writer = csv.DictWriter(file, fieldnames=WIKI_FIELDNAMES)
         writer.writerow(info)
 
+
 def wikiparser(client, repositories, path_drepo, csv_name):
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(WIKI_FIELDNAMES)
-
 
     #Создаем список репозиториев из файла
     with open(repositories, 'r') as file:
@@ -83,6 +83,5 @@ def wikiparser(client, repositories, path_drepo, csv_name):
         print("!=====Проблемные репозитории=====!")
         for rep in error_repos:
             print(rep)
-
 
     return data_changes
