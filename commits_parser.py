@@ -7,6 +7,8 @@ EMPTY_FIELD = 'Empty field'
 TIMEDELTA = 0.05
 TIMEZONE = 'Europe/Moscow'
 FIELDNAMES = ('repository name', 'author name', 'author login', 'author email', 'date and time', 'changed files', 'commit id', 'branch')
+FORKED_REPO = False
+ORIG_REPO_COMMITS = []
 
 def log_commit_to_csv(info, csv_name):
     with open(csv_name, 'a', newline='') as file:
@@ -18,7 +20,7 @@ def log_commit_to_stdout(info):
     print(info)
 
 
-def log_repository_commits(repository: Repository, csv_name, start, finish, branch):
+def log_repository_commits(repository: Repository, csv_name, start, finish, branch, fork_flag):
     branches = []
     match branch:
         case 'all':
@@ -37,11 +39,13 @@ def log_repository_commits(repository: Repository, csv_name, start, finish, bran
                     pytz.timezone(TIMEZONE)) < start or commit.commit.author.date.astimezone(
                 pytz.timezone(TIMEZONE)) > finish:
                 continue
-            if commit.commit is not None:
+            if commit.commit is not None and commit.commit.sha not in ORIG_REPO_COMMITS:
                 nvl = lambda val: val or EMPTY_FIELD
                 commit_data = [repository.full_name, commit.commit.author.name, nvl(commit.author.login), nvl(commit.commit.author.email),
                                commit.commit.author.date, '; '.join([file.filename for file in commit.files]), commit.commit.sha, branch]
                 info = dict(zip(FIELDNAMES, commit_data))
+                if fork_flag:
+                    ORIG_REPO_COMMITS.append(info['commit id'])
 
                 log_commit_to_csv(info, csv_name)
                 log_commit_to_stdout(info)
@@ -57,11 +61,11 @@ def log_commits(client: Github, working_repos, csv_name, start, finish, branch, 
     for repo in working_repos:
         try:
             print('=' * 20, repo.full_name, '=' * 20)
-            log_repository_commits(repo, csv_name, start, finish, branch)
+            log_repository_commits(repo, csv_name, start, finish, branch, fork_flag)
             if fork_flag:
                 for forked_repo in repo.get_forks():
                     print('=' * 20, "FORKED:", forked_repo.full_name, '=' * 20)
-                    log_repository_commits(forked_repo, csv_name, start, finish, branch)
+                    log_repository_commits(forked_repo, csv_name, start, finish, branch, FORKED_REPO)
                     sleep(TIMEDELTA)
             sleep(TIMEDELTA)
         except Exception as e:
