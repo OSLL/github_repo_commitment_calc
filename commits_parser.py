@@ -6,7 +6,7 @@ from github import Github, Repository, GithubException, PullRequest
 EMPTY_FIELD = 'Empty field'
 TIMEDELTA = 0.05
 TIMEZONE = 'Europe/Moscow'
-FIELDNAMES = ('repository name', 'author name', 'author login', 'author email', 'date and time', 'changed files', 'commit id', 'branch')
+FIELDNAMES = ('repository name', 'author name', 'author login', 'author email', 'date and time', 'changed files', 'commit id', 'branch', 'added lines', 'deleted lines')
 FORKED_REPO = False
 ORIG_REPO_COMMITS = []
 
@@ -42,7 +42,7 @@ def log_repository_commits(repository: Repository, csv_name, start, finish, bran
             if commit.commit is not None and commit.commit.sha not in ORIG_REPO_COMMITS:
                 nvl = lambda val: val or EMPTY_FIELD
                 commit_data = [repository.full_name, commit.commit.author.name, nvl(commit.author.login), nvl(commit.commit.author.email),
-                               commit.commit.author.date, '; '.join([file.filename for file in commit.files]), commit.commit.sha, branch]
+                               commit.commit.author.date, '; '.join([file.filename for file in commit.files]), commit.commit.sha, branch, commit.stats.additions, commit.stats.deletions]
                 info = dict(zip(FIELDNAMES, commit_data))
                 if fork_flag:
                     ORIG_REPO_COMMITS.append(info['commit id'])
