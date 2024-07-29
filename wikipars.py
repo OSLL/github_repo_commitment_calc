@@ -2,8 +2,7 @@ from git import Repo, exc
 import os
 import time
 import csv
-
-WIKI_FIELDNAMES = ['repository name', 'author name', 'author login', 'datetime', 'page', 'action', 'revision id', 'added lines', 'deleted lines']
+from constants import WIKI_FIELDNAMES, EMPTY_FIELD, EMPTY_TREE_SHA, ACTIVITY, AUTHOR_LOGIN, PAGE, ACTION
 
 def log_wiki_to_csv(info, csv_name):
     with open(csv_name, 'a', newline='') as file:
@@ -48,30 +47,22 @@ def wikiparser(client, repositories, path_drepo, csv_name):
 
         print("=" * 20, name_rep, "=" * 20)
         #Вывод изменений
-        EMPTY_TREE_SHA = "4b825dc642cb6eb9a060e54bf8d69288fbee4904" #Хэш пустого дерева для сравнения с первым коммитом. Способ был найден здесь: https://stackoverflow.com/questions/33916648/get-the-diff-details-of-first-commit-in-gitpython
         wiki_commits = repo.iter_commits(all=True)
-        activity = {"A" : "Страница добавлена", "M" : "Страница изменена", "D" : "Страница удалена", "R":"Страница переименована"}
-        #eng_activity = {"A" : "Page added", "M" : "Page modified", "D" : "Page deleted", "R": "Page renamed"}
         for commit in wiki_commits:
             data_commit = dict()
             parent = commit.parents
-            data_commit["repository name"] = name_rep
-            data_commit["author name"] = commit.author
+            commit_data = [name_rep, commit.author, EMPTY_FIELD, time.strftime("%Y-%m-%d %H:%M:%S%z", time.gmtime(commit.committed_date)),
+                           EMPTY_FIELD, commit, commit.stats.total["insertions"], commit.stats.total["deletions"]]
+            info = dict(zip(WIKI_FIELDNAMES, commit_data))
             if commit.author.email and len(commit.author.email.split('+')) > 1:
-                data_commit["author login"] = commit.author.email.split('+')[1].split('@users')[0]
-            else:
-                data_commit["author login"] = "empty login"
-            data_commit["datetime"] = time.strftime("%Y-%m-%d %H:%M:%S%z", time.gmtime(commit.committed_date))
+                data_commit[AUTHOR_LOGIN] = commit.author.email.split('+')[1].split('@users')[0]
             if parent:
-                data_commit["page"] = ';'.join([diff.b_path for diff in parent[0].diff(commit)])
-                data_commit["action"] = ';'.join([activity[diff.change_type] for diff in parent[0].diff(commit)])
+                data_commit[PAGE] = ';'.join([diff.b_path for diff in parent[0].diff(commit)])
+                data_commit[ACTION] = ';'.join([ACTIVITY[diff.change_type] for diff in parent[0].diff(commit)])
             else:
                 #Первый коммит
-                data_commit["page"] = ';'.join([diff.b_path for diff in commit.diff(EMPTY_TREE_SHA)])
-                data_commit["action"] = ';'.join([activity["A"]])
-            data_commit["revision id"] = commit
-            data_commit["added lines"] = commit.stats.total["insertions"]
-            data_commit["deleted lines"] = commit.stats.total["deletions"]
+                data_commit[PAGE] = ';'.join([diff.b_path for diff in commit.diff(EMPTY_TREE_SHA)])
+                data_commit[ACTION] = ';'.join([ACTIVITY["A"]])
             for fieldname in data_commit:
                 print(fieldname, data_commit[fieldname], sep=': ')
             print("-" * 40)

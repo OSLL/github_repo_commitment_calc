@@ -2,17 +2,11 @@ import csv
 import pytz
 from time import sleep
 from github import Github, Repository, GithubException, PullRequest
-
-EMPTY_FIELD = 'Empty field'
-TIMEDELTA = 0.05
-TIMEZONE = 'Europe/Moscow'
-FIELDNAMES = ('repository name', 'author name', 'author login', 'author email', 'date and time', 'changed files', 'commit id', 'branch', 'added lines', 'deleted lines')
-FORKED_REPO = False
-ORIG_REPO_COMMITS = []
+from constants import EMPTY_FIELD, TIMEDELTA, TIMEZONE, FORKED_REPO, ORIG_REPO_COMMITS, COMMIT_FIELDNAMES
 
 def log_commit_to_csv(info, csv_name):
     with open(csv_name, 'a', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=FIELDNAMES)
+        writer = csv.DictWriter(file, fieldnames=COMMIT_FIELDNAMES)
         writer.writerow(info)
 
 
@@ -43,7 +37,7 @@ def log_repository_commits(repository: Repository, csv_name, start, finish, bran
                 nvl = lambda val: val or EMPTY_FIELD
                 commit_data = [repository.full_name, commit.commit.author.name, nvl(commit.author.login), nvl(commit.commit.author.email),
                                commit.commit.author.date, '; '.join([file.filename for file in commit.files]), commit.commit.sha, branch, commit.stats.additions, commit.stats.deletions]
-                info = dict(zip(FIELDNAMES, commit_data))
+                info = dict(zip(COMMIT_FIELDNAMES, commit_data))
                 if fork_flag:
                     ORIG_REPO_COMMITS.append(info['commit id'])
 
@@ -55,7 +49,7 @@ def log_repository_commits(repository: Repository, csv_name, start, finish, bran
 def log_commits(client: Github, working_repos, csv_name, start, finish, branch, fork_flag):
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(FIELDNAMES)
+        writer.writerow(COMMIT_FIELDNAMES)
 
 
     for repo in working_repos:
@@ -68,5 +62,6 @@ def log_commits(client: Github, working_repos, csv_name, start, finish, branch, 
                     log_repository_commits(forked_repo, csv_name, start, finish, branch, FORKED_REPO)
                     sleep(TIMEDELTA)
             sleep(TIMEDELTA)
+            ORIG_REPO_COMMITS.clear()
         except Exception as e:
             print(e)
