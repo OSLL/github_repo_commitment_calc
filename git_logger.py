@@ -1,6 +1,7 @@
 from github import Github, GithubException, PullRequest
 from time import sleep
-from constants import TIMEDELTA, TIMEZONE
+from constants import TIMEDELTA
+
 
 def login(token):
     client = Github(login_or_token=token)

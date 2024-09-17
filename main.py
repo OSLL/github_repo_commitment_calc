@@ -9,6 +9,8 @@ import pull_requests_parser
 import issues_parser
 import invites_parser
 import wikipars
+from constants import TIMEZONE
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -32,7 +34,7 @@ def parse_args():
     parser.add_argument('--sheet_id', type=str, required=False,
                         help='Specify title for a sheet in a document in which data will be printed')
     args = parser.parse_args()
-    
+
     if args.export_google_sheets:
         for action in parser._actions:
             if action.dest == 'google_token':
@@ -50,7 +52,7 @@ def parse_time(datetime_str):
     start = [int(i) for i in start]
     start_datetime = datetime(year=start[0], month=start[1], day=start[2], hour=start[3], minute=start[4],
                               second=start[5])
-    return start_datetime.astimezone(pytz.timezone(git_logger.TIMEZONE))
+    return start_datetime.astimezone(pytz.timezone(TIMEZONE))
 
 
 def main():

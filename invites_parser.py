@@ -1,12 +1,10 @@
 import csv
-import pytz
-import requests
-import json
 from time import sleep
-from github import Github, Repository, GithubException, PullRequest
-from constants import INVITE_FIELDNAMES
+from github import Github
+from constants import INVITE_FIELDNAMES, TIMEDELTA
 
-def log_inviter(repo, invite):
+
+def log_inviter(repo, invite, writer):
     invite_info = [repo.full_name, invite.invitee.login, invite.created_at.strftime("%d/%m/%Y, %H:%M:%S"), invite.html_url]
     writer.writerow(invite_info)
     print(invite_info)
@@ -21,7 +19,7 @@ def log_invitations(client: Github, working_repos, csv_name):
             invitations = repo.get_pending_invitations()
             for invite in invitations:
                 try:
-                    log_inviter(repo, invite)
-                    sleep(timedelta)
+                    log_inviter(repo, invite, writer)
+                    sleep(TIMEDELTA)
                 except Exception as e:
                     print(e)

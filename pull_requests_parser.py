@@ -4,8 +4,9 @@ import requests
 import json
 from time import sleep
 from git_logger import get_assignee_story
-from github import Github, Repository, GithubException, PullRequest
+from github import Github, Repository
 from constants import EMPTY_FIELD, TIMEDELTA, TIMEZONE, PULL_REQUEST_FIELDNAMES, COMMENT_BODY, COMMENT_CREATED_AT, COMMENT_AUTHOR_NAME, COMMENT_AUTHOR_LOGIN, COMMENT_AUTHOR_EMAIL
+
 
 def log_pr_to_stdout(info):
     print(info)

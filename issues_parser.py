@@ -4,8 +4,9 @@ import requests
 import json
 from time import sleep
 from git_logger import get_assignee_story
-from github import Github, Repository, GithubException, PullRequest
+from github import Github, Repository
 from constants import EMPTY_FIELD, TIMEDELTA, TIMEZONE, ISSUE_FIELDNAMES, COMMENT_BODY, COMMENT_CREATED_AT, COMMENT_AUTHOR_NAME, COMMENT_AUTHOR_LOGIN, COMMENT_AUTHOR_EMAIL
+
 
 def log_issue_to_csv(info, csv_name):
     with open(csv_name, 'a', newline='') as file:
@@ -67,10 +68,10 @@ def get_connected_pulls(issue_number, repo_owner, repo_name, token):
     if (pull_request_data is not None):
         issues_data = pull_request_data["timelineItems"]["nodes"]
         for pulls in issues_data:
-            if (pulls.get("CrossReferencedEvent") != None and pulls.get("CrossReferencedEvent").get(
+            if (pulls.get("CrossReferencedEvent") is not None and pulls.get("CrossReferencedEvent").get(
                     "url") not in list_url):
                 list_url.append(pulls.get("CrossReferencedEvent").get("url"))
-            if (pulls.get("ConnectedEvent") != None and pulls.get("ConnectedEvent").get("url") not in list_url):
+            if (pulls.get("ConnectedEvent") is not None and pulls.get("ConnectedEvent").get("url") not in list_url):
                 list_url.append(pulls.get("ConnectedEvent").get("url"))
         if (list_url == []):
             return 'Empty field'

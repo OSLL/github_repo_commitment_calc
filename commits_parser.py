@@ -1,8 +1,10 @@
 import csv
 import pytz
 from time import sleep
-from github import Github, Repository, GithubException, PullRequest
-from constants import EMPTY_FIELD, TIMEDELTA, TIMEZONE, FORKED_REPO, ORIG_REPO_COMMITS, COMMIT_FIELDNAMES
+from github import Github, Repository
+from constants import (EMPTY_FIELD, TIMEDELTA, TIMEZONE,
+                       FORKED_REPO, ORIG_REPO_COMMITS, COMMIT_FIELDNAMES)
+
 
 def log_commit_to_csv(info, csv_name):
     with open(csv_name, 'a', newline='') as file:
@@ -30,8 +32,7 @@ def log_repository_commits(repository: Repository, csv_name, start, finish, bran
         # TODO add support of since and until in https://pygithub.readthedocs.io/en/stable/github_objects/Repository.html#github.Repository.Repository.get_commits
         for commit in repository.get_commits(sha=branch):
             if commit.commit.author.date.astimezone(
-                    pytz.timezone(TIMEZONE)) < start or commit.commit.author.date.astimezone(
-                pytz.timezone(TIMEZONE)) > finish:
+                    pytz.timezone(TIMEZONE)) < start or commit.commit.author.date.astimezone(pytz.timezone(TIMEZONE)) > finish:
                 continue
             if commit.commit is not None and commit.commit.sha not in ORIG_REPO_COMMITS:
                 nvl = lambda val: val or EMPTY_FIELD
@@ -50,7 +51,6 @@ def log_commits(client: Github, working_repos, csv_name, start, finish, branch, 
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(COMMIT_FIELDNAMES)
-
 
     for repo in working_repos:
         try:
