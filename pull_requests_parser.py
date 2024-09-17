@@ -4,16 +4,9 @@ import requests
 import json
 from time import sleep
 from git_logger import get_assignee_story
-from github import Github, Repository, GithubException, PullRequest
+from github import Github, Repository
+from constants import EMPTY_FIELD, TIMEDELTA, TIMEZONE, PULL_REQUEST_FIELDNAMES, COMMENT_BODY, COMMENT_CREATED_AT, COMMENT_AUTHOR_NAME, COMMENT_AUTHOR_LOGIN, COMMENT_AUTHOR_EMAIL
 
-EMPTY_FIELD = 'Empty field'
-TIMEDELTA = 0.05
-TIMEZONE = 'Europe/Moscow'
-FIELDNAMES = ('repository name', 'title', 'id', 'state', 'commit into', 'commit from', 'created at', 'creator name',
-              'creator login', 'creator email', 'changed files', 'comment body',
-              'comment created at', 'comment author name', 'comment author login',
-              'comment author email', 'merger name', 'merger login', 'merger email', 'source branch',
-              'target branch', 'assignee story', 'related issues', 'labels', 'milestone')
 
 def log_pr_to_stdout(info):
     print(info)
@@ -21,7 +14,7 @@ def log_pr_to_stdout(info):
 
 def log_pr_to_csv(info, csv_name):
     with open(csv_name, 'a', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=FIELDNAMES)
+        writer = csv.DictWriter(file, fieldnames=PULL_REQUEST_FIELDNAMES)
         writer.writerow(info)
 
 
@@ -78,42 +71,22 @@ def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
             continue
         nvl = lambda val: val or EMPTY_FIELD
         get_info = lambda obj, attr: EMPTY_FIELD if obj is None else getattr(obj, attr)
-        info_tmp = {
-            'repository name': repository.full_name,
-            'title': pull.title,
-            'id': pull.number,
-            'state': pull.state,
-            'commit into': pull.base.label,
-            'commit from': pull.head.label,
-            'created at': pull.created_at,
-            'creator name': nvl(pull.user.name),
-            'creator login': pull.user.login,
-            'creator email': pull.user.email,
-            'changed files': '; '.join([file.filename for file in pull.get_files()]),
-            'comment body': EMPTY_FIELD,
-            'comment created at': EMPTY_FIELD,
-            'comment author name': EMPTY_FIELD,
-            'comment author login': EMPTY_FIELD,
-            'comment author email': EMPTY_FIELD,
-            'merger name': get_info(pull.merged_by, 'name'),
-            'merger login': get_info(pull.merged_by, 'login'),
-            'merger email': get_info(pull.merged_by, 'email'),
-            'source branch': pull.head.ref,
-            'target branch': pull.base.ref,
-            'assignee story': get_assignee_story(pull),
-            'related issues': EMPTY_FIELD if pull.issue_url is None else get_related_issues(pull.number, repository.owner, repository.name, token),
-            'labels': EMPTY_FIELD if pull.labels is None else ';'.join([label.name for label in pull.labels]),
-            'milestone': get_info(pull.milestone, 'title')
-        }
+        pr_data = [repository.full_name, pull.title, pull.number, pull.state, pull.base.label, pull.head.label, pull.created_at,
+                   nvl(pull.user.name), pull.user.login, pull.user.email, '; '.join([file.filename for file in pull.get_files()]),
+                   EMPTY_FIELD, EMPTY_FIELD, EMPTY_FIELD, EMPTY_FIELD, EMPTY_FIELD, get_info(pull.merged_by, 'name'),
+                   get_info(pull.merged_by, 'login'), get_info(pull.merged_by, 'email'), pull.head.ref, pull.base.ref,
+                   get_assignee_story(pull), EMPTY_FIELD if pull.issue_url is None else get_related_issues(pull.number, repository.owner, repository.name, token),
+                   EMPTY_FIELD if pull.labels is None else ';'.join([label.name for label in pull.labels]), get_info(pull.milestone, 'title')]
+        info_tmp = dict(zip(PULL_REQUEST_FIELDNAMES, pr_data))
 
         if pull.get_comments().totalCount > 0:
             for comment in pull.get_comments():
                 info = info_tmp
-                info['comment body'] = comment.body
-                info['comment created at'] = comment.created_at
-                info['comment author name'] = comment.user.name
-                info['comment author login'] = comment.user.login
-                info['comment author email'] = nvl(comment.user.email)
+                info[COMMENT_BODY] = comment.body
+                info[COMMENT_CREATED_AT] = comment.created_at
+                info[COMMENT_AUTHOR_NAME] = comment.user.name
+                info[COMMENT_AUTHOR_LOGIN] = comment.user.login
+                info[COMMENT_AUTHOR_EMAIL] = nvl(comment.user.email)
                 log_pr_to_csv(info, csv_name)
                 log_pr_to_stdout(info)
         else:
@@ -125,7 +98,7 @@ def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
 def log_pull_requests(client: Github, working_repos, csv_name, token, start, finish, fork_flag):
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(FIELDNAMES)
+        writer.writerow(PULL_REQUEST_FIELDNAMES)
 
     for repo in working_repos:
         try:
