@@ -65,7 +65,7 @@ def get_contributor_commits(repo_owner, repo_name, token):
     request = requests.get(request_name, headers=headers)
 
     while request.status_code == 202:
-        print("Waiting for responce...")
+        print("Waiting for response...")
         sleep(10)
         request = requests.get(request_name, headers=headers)
 
