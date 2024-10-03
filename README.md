@@ -9,6 +9,18 @@
 pip install -r requirements.txt
 ```
 
+## Docker run
+1. Build via:  
+``` bash
+docker build -t checking_repo .
+```
+
+2. Run via:  
+``` bash
+docker run -v $(pwd)/output:/app/output checking_repo --invites -t <insert_token> -l <insert_list> -o ./output/res.csv
+```
+
+
 ## Запуск приложения:
 1. Логирование commits
 ```commandline
@@ -30,6 +42,10 @@ python3 main.py --invites [-t, --token] token (github токен вместо to
 ```commandline
 python3 main.py [-w, --wikis] [-t, --token] token (github токен вместо token) [-l, --list]  list (list - строка пути к txt файлу со списком репозиториев)  --dowland_repos path_drepo (path_drepo - строка пути к директории, где сохраняются вики-репозитории) [-o, --out] out (out - название csv файла, в который будут помещены все логи)
 ```
+
+### `list` config
+
+Use '--list' flag with files like [list_cs_2024.txt](./list_cs_2024.txt)
 
 
 ##  Получение токена для работы с Google таблицей:
