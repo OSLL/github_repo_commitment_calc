@@ -27,7 +27,7 @@ jobs:
     - name: Check if out.csv exists
       run: ls out.csv
 
-    - name: Fail is out.csv does not exist
+    - name: Fail if out.csv does not exist
       if: failure()
       run: exit 1
 
