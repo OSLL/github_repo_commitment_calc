@@ -15,8 +15,5 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Copy env file
-      run: cp env.example .env
-
-    - name: Run tests
+    - name: Run test
       run: python3 main.py --commits --token ${{ secrets.TEST_TOKEN_GITHUB }} --list  (list - строка пути к txt файлу со списком репозиториев) --out] out.csv --branch all
