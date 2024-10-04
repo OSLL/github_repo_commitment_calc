@@ -23,3 +23,16 @@ jobs:
 
     - name: Run test
       run: python3 main.py --commits --token ${{ secrets.TEST_TOKEN_GITHUB }} --list list.txt --out out.csv --branch all
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v2
+      with:
+        name: test-results
+        path: out.csv
+
+    - name: Check if out.csv exists
+      run: ls out.csv
+
+    - name: Fail is out.csv does not exist
+      if: failure()
+      run: exit 1
