@@ -23,6 +23,7 @@ def parse_args():
     parser.add_argument('-l', '--list', type=str, required=True, help='Path to the file containing the list of repositories. Repositories should be separated by a line break. Names should be in the format <organization or owner>/<name> ')
     parser.add_argument("--download_repos", type=str, help="path to downloaded repositories", default='./')
     parser.add_argument('-o', '--out', type=str, required=True, help='output filename')
+    parser.add_argument("-C", "--comments", help="log comments for PR", action="store_true")
     parser.add_argument('-s', '--start', type=str, required=False, help='start time', default='2000/01/01-00:00:00')
     parser.add_argument('-f', '--finish', type=str, required=False, help='finish time', default='2400/01/01-00:00:00')
     parser.add_argument('-b', '--branch', type=str, required=False, help='branch to select commits, by default use "default" repository branch, use "all" to get all commits from all branches', default=None)
@@ -60,6 +61,7 @@ def main():
     csv_name = args.out
     path_drepo = args.download_repos
     fork_flag = args.forks_include
+    log_comments = args.comments
 
     try:
         client = git_logger.login(token=token)
@@ -74,7 +76,7 @@ def main():
         if args.commits:
             commits_parser.log_commits(client, working_repos, csv_name, start, finish, args.branch, fork_flag)
         if args.pull_requests:
-            pull_requests_parser.log_pull_requests(client, working_repos, csv_name, token, start, finish, fork_flag)
+            pull_requests_parser.log_pull_requests(client, working_repos, csv_name, token, start, finish, fork_flag, log_comments)
         if args.issues:
             issues_parser.log_issues(client, working_repos, csv_name, token, start, finish, fork_flag)
         if args.invites:
