@@ -71,7 +71,7 @@ def get_related_issues(pull_request_number, repo_owner, repo_name, token):
     return ';'.join(list_issues_url)
 
 
-def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
+def log_repositories_pr(repository: Repository, csv_name, token, start, finish, log_comments=False):
     for pull in repository.get_pulls(state='all'):
         if pull.created_at.astimezone(pytz.timezone(TIMEZONE)) < start or pull.created_at.astimezone(
                 pytz.timezone(TIMEZONE)) > finish:
@@ -106,23 +106,25 @@ def log_repositories_pr(repository: Repository, csv_name, token, start, finish):
             'milestone': get_info(pull.milestone, 'title')
         }
 
-        if pull.get_comments().totalCount > 0:
-            for comment in pull.get_comments():
-                info = info_tmp
-                info['comment body'] = comment.body
-                info['comment created at'] = comment.created_at
-                info['comment author name'] = comment.user.name
-                info['comment author login'] = comment.user.login
-                info['comment author email'] = nvl(comment.user.email)
-                log_pr_to_csv(info, csv_name)
-                log_pr_to_stdout(info)
+        if log_comments:
+            comments = pull.get_comments()
+            if comments.totalCount > 0:
+                for comment in comments:
+                    info = info_tmp
+                    info['comment body'] = comment.body
+                    info['comment created at'] = comment.created_at
+                    info['comment author name'] = comment.user.name
+                    info['comment author login'] = comment.user.login
+                    info['comment author email'] = nvl(comment.user.email)
+                    log_pr_to_csv(info, csv_name)
+                    log_pr_to_stdout(info)
         else:
             log_pr_to_csv(info_tmp, csv_name)
             log_pr_to_stdout(info_tmp)
         sleep(TIMEDELTA)
 
 
-def log_pull_requests(client: Github, working_repos, csv_name, token, start, finish, fork_flag):
+def log_pull_requests(client: Github, working_repos, csv_name, token, start, finish, fork_flag, log_comments=False):
     with open(csv_name, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(FIELDNAMES)
@@ -134,7 +136,7 @@ def log_pull_requests(client: Github, working_repos, csv_name, token, start, fin
             if fork_flag:
                 for forked_repo in repo.get_forks():
                     print('=' * 20, "FORKED:", forked_repo.full_name, '=' * 20)
-                    log_repositories_pr(forked_repo, csv_name, token, start, finish)
+                    log_repositories_pr(forked_repo, csv_name, token, start, finish, log_comments)
                     sleep(TIMEDELTA)
             sleep(TIMEDELTA)
         except Exception as e:
