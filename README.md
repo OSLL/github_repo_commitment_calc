@@ -32,7 +32,7 @@ python3 main.py [-i, --issues] [-t, --token] token (github токен вмест
 ```
 3. Логирование pull requests
 ```commandline
-python3 main.py [-p, --pull_requests] [-t, --token] token (github токен вместо token) [-l, --list]  list (list - строка пути к txt файлу со списком репозиториев) [-o, --out] out (out - название csv файла, в который будут помещены все логи)
+python3 main.py [-p, --pull_requests] [-t, --token] token (github токен вместо token) [-l, --list]  list (list - строка пути к txt файлу со списком репозиториев) [-o, --out] out (out - название csv файла, в который будут помещены все логи) [--pr_comments] (если установлен - также выгружаются комментарии к PR)
 ```
 4. Логирование непринятых приглашений в репо
 ```commandline
