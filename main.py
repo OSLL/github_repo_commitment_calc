@@ -61,7 +61,9 @@ def main():
     csv_name = args.out
     path_drepo = args.download_repos
     fork_flag = args.forks_include
-    log_pr_comments = args.pr_comments    
+    log_pr_comments = args.pr_comments
+    start, finish = None, None
+
     try:
         client = git_logger.login(token=token)
     except Exception as e:
