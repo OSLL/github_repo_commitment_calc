@@ -39,7 +39,7 @@ def log_repository_commits(repository: Repository, csv_name, start, finish, bran
                 continue
             if commit.commit is not None:
                 nvl = lambda val: val or EMPTY_FIELD
-                commit_data = [repository.full_name, commit.commit.author.name, nvl(commit.author.login), nvl(commit.commit.author.email),
+                commit_data = [repository.full_name, commit.commit.author.name, nvl(commit.author.login if commit.author else None), nvl(commit.commit.author.email),
                                commit.commit.author.date, '; '.join([file.filename for file in commit.files]), commit.commit.sha, branch]
                 info = dict(zip(FIELDNAMES, commit_data))
 
